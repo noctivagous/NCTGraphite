@@ -1,0 +1,12 @@
+{
+  "name": "@nct/nctgraphite-studio",
+  "private": true,
+  "version": "0.0.0",
+  "description": "NCTGraphite Studio builder application.",
+  "type": "module",
+  "dependencies": {
+    "@nct/nctgraphite": "*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
