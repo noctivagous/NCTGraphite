@@ -102,6 +102,30 @@ The project name is always shown in full as NCTGraphite. Library packages,
 components, hooks, providers, themes, files, and XML tags all carry the full
 `NCTGraphite` prefix. The shortened suffix form is never used on its own.
 
+## AI-assisted development and codebase traversal
+
+NCTGraphite is designed so AI agents can navigate it by contract and query,
+rather than by reading the entire repository.
+
+The human-authored surface stays small: predictable names and locations, typed
+props, a short purpose statement, metadata, and examples. Broader maps are
+generated from those sources: the component registry, tag catalog, dependency
+direction, valid bindings, validation rules, and executable examples. Generated
+material must be fresh enough to trust, so stale generated artifacts should
+fail CI rather than silently drift.
+
+Agents should use progressive disclosure:
+
+- Query one component, binding, error, or dependent when it is needed.
+- Do not load the whole catalog, architecture, or history by default.
+- Prefer validation feedback and specific errors over exhaustive prior reading.
+- Keep framework knowledge in tools and generated contracts, not in long
+  mandatory documentation that every agent must internalize.
+
+The repository therefore favors compact generated contracts, structured
+queries, deterministic validation, and stable names over verbose per-component
+essays or duplicated schemas.
+
 ## What lives here
 
 Planned repository layout:
