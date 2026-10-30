@@ -36,7 +36,8 @@ The goal is a complete NCTGraphite app kit for mobile and desktop applications:
 - A coherent set of GUI components.
 - Underlying layout components comparable to layout primitives such as
   StackPanel (Windows WPF).
-- Logic components for application behavior.
+- AI-ready XML tag-based logic components for application behavior, usable
+  consistently across applications.
 - A tag language in the tradition of MXML, FXML, XAML, and XUL, so most of an
   app can be expressed declaratively in tags.
 - A GUI builder studio that is maintained alongside changes.
@@ -52,6 +53,29 @@ The goal is a complete NCTGraphite app kit for mobile and desktop applications:
 Every public tag is an `NCTGraphite…` component in both JSX and XML. The same
 component vocabulary therefore works for hand-written code, generated code, XML
 documents, validation, builder editing, and runtime rendering.
+
+### Component levels
+
+NCTGraphite will have different component levels, built in order.
+
+The first level is individual reusable components: GUI controls, layout
+primitives, themes, bindings, and AI-ready XML tag-based logic components.
+These are the stable vocabulary used consistently across applications, so AI
+and developers can piece applications together quickly.
+
+A later level—not the first stage—is common application subkits, setups, and
+scenarios. Examples include Preferences, Settings, login and authentication,
+application shells, and a generic dashboard or data monitor. Whereas frameworks
+such as XAML or XUL primarily supply individual components, these NCTGraphite
+subkits would preassemble GUI controls, logic components, data models, and
+controllers for recurring scenarios. Applications would then snap together
+more easily from finished scenarios, rather than assembling every behavior
+from individual parts.
+
+Subkits should be built only after the first-level vocabulary, bindings,
+settings flow, and validation are stable. They remain subject to the same
+rule: enter NCTGraphite when real applications need them, not as speculative
+framework work.
 
 ## Benefits
 
@@ -117,7 +141,8 @@ a git submodule, normally at:
 ```
 
 The application then depends on the library through an npm workspace path rather
-than a downloaded package:
+than a downloaded package. That workspace configuration belongs in the consuming
+application's `package.json`, not in this repository:
 
 ```json
 {
@@ -130,12 +155,17 @@ than a downloaded package:
 }
 ```
 
-During installation, npm creates the normal workspace symlink:
+During installation, npm creates the normal workspace symlink automatically:
 
 ```text
 <application>/node_modules/@nct/nctgraphite
   -> <application>/NCTGraphite/packages/nctgraphite
 ```
+
+The checked-out `<application>/NCTGraphite/` submodule itself is a real Git
+repository checkout, not a symlink. Do not replace it with a hand-made
+filesystem symlink, and do not hand-create links inside `node_modules`; the
+only supported symlink is the one npm generates from the workspace dependency.
 
 Applications therefore import NCTGraphite as ordinary source code:
 
@@ -194,6 +224,12 @@ npm run dev
 After changing the checked-out `NCTGraphite` submodule, verify the library
 itself, commit the library change, then commit the application with the updated
 submodule pointer.
+
+This also applies when the library is edited from inside a consuming checkout,
+such as `nibglider/NCTGraphite/`: commit and push the nested NCTGraphite
+repository first, then commit the outer application repository to record the
+updated submodule pointer. A commit in the outer application alone records the
+pointer, not the library file changes.
 
 ## Contribution rules
 
