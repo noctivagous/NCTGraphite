@@ -64,13 +64,14 @@ model. The fix is convergence, not another rewrite:
    copy-paste either app's compromises into the library. Migrate one real
    screen per app onto each new component and delete the original.
 3. **Mine the external `noct-code-appkit` project afterwards, on demand
-   — do not convert it wholesale.** Its ~55 Lit tags become a donor
-   backlog ordered by the functional apps' needs (§7 Phase 3): port the
+   — do not convert it wholesale.** Its 63 Lit tags become a donor
+   backlog ordered by the functional apps' needs (§7 Phase 3): build the
    simple proven pieces (`Panel/Pane/Well`, `Splitter`, `Tabview`,
    `Menubar`, `Statusbar`, `Slider`, `Meter`, `Listbox`, `Segmented`,
-   `Tooltip`) to React in this repository's `packages/nctgraphite/`
-   when an app asks; redesign the eval-based logic tags,
-   `Store`, and `Flow` rather than porting them; defer `Player`, `Upload`,
+   `Tooltip`) fresh in React in this repository's `packages/nctgraphite/`
+   when an app asks, using the inventory descriptions and `*Meta` as the
+   spec; redesign the eval-based logic tags,
+   `Store`, and `Flow` rather than rebuilding from donor code; defer `Player`, `Upload`,
    `AuthForm`, and the absolute-position GUI canvas until a functional
    app needs them. Its per-component metadata idea is adopted from the
    start. This avoids spending the conversion budget on experimental
@@ -124,7 +125,14 @@ there without pausing any of the three projects.
 
 ### 2.1 External `noct-code-appkit` — the kit prototype (Lit 3 + TypeScript + Vite)
 
-The fullest component catalog of the three. `src/main.ts` exports ~55 tags:
+The fullest component catalog of the three. `src/main.ts` exports 63 tags in 8 groups (plus `core/` base infrastructure):
+
+```
+src/lib/ — app (15) · layout (11) · logic (17) · widgets (8)
+           · data (4) · gui (4) · flow (2) · meta (2)
+```
+
+Per-tag descriptions with source-file paths: `NOCTCODE-APPKIT-COMPONENT-INVENTORY.md` (this repository).
 
 | Category | Tags (in `src/lib/…`) | Notes |
 |---|---|---|
@@ -433,11 +441,14 @@ that feeds Layer 2 over time; it is not a layer.
   one-time mappings onto the canonical names (aliases may live one release,
   then are removed — per your standing rule, no permanent shims). The
   rectangular/bevel vs. rounded question must be settled as *theme*,
-  not code: ship `NCTGraphiteDark` (rectangular pro, from the NoctCode
-  styleguide) as the default theme and express NCT's teal-accent rounded
-  look as a second theme file over the same tokens/components, so
-  "themeable" is proven by two real themes instead of asserted. Radius
-  stays a token; that is the right seam.
+  not code: `NCTGraphiteDark` (NCT's current look — dark pro, teal
+  accent, rounded) is the default theme, and the NoctCode rectangular
+  bevelled styleguide ships as `NCTClassicDark`, a second theme file over
+  the same tokens/components, so "themeable" is proven by two real
+  themes instead of asserted. `NCTTechDesMVD` is reserved for
+  technical minimum-viable-demo web artifacts in the grid-paint-labs
+  idiom. Radius stays a token; that is the right seam. The registry is
+  `themes.json` (names, descriptions, token tables, sources).
 
 ### 4.2 Layer 3 — the NCTGraphite XML language
 
@@ -796,8 +807,9 @@ screen at a time.
   deleting the app-local originals (`src/controls/*`, the duplicated
   `SwitchControl`/`ToggleControl`). Token aliases for the old variable
   names live exactly one release, then are deleted.
-- Ship the second theme (`NCTGraphite` teal/rounded, from NCT's current
-  look) alongside `NCTGraphiteDark` so theming is proven, not asserted.
+- Ship the second theme (`NCTClassicDark`, rectangular bevelled, from
+  the NoctCode styleguide) alongside the default `NCTGraphiteDark` so
+  theming is proven, not asserted.
 
 *Exit criteria:* both apps build and pass their existing tests while
 importing `@nct/nctgraphite` via the submodule + workspace (§4.5);
@@ -864,17 +876,24 @@ pass (NibGlider's XML tests now run against the NCTGraphite parser).
 ### Phase 3 — Mine external `noct-code-appkit` into this repository (on demand)
 
 Only now does the donor project enter, and only against named needs from
-Phases 0–2. Triage its ~55 tags into three buckets, in this order:
+Phases 0–2. Triage its 63 tags into three buckets, in this order
+(per-tag spec: `NOCTCODE-APPKIT-COMPONENT-INVENTORY.md` in this repository):
 
-- **Port to React in `packages/nctgraphite/`** (simple, proven, and asked for):
+- **Build fresh in React in `packages/nctgraphite/`** (simple, proven, and asked for):
   `NCTGraphiteSlider`, `NCTGraphiteMeter`, `NCTGraphiteListbox`,
   `NCTGraphiteSegmented` (if distinct from `NCTGraphiteSwitch`),
   `NCTGraphiteTooltip`, `NCTGraphiteKey`, `NCTGraphiteDisplay`,
-  `NCTGraphiteScene`, `NCTGraphiteChart` — each as a fresh
-  `NCTGraphite…` React component using the Noct component's behavior,
-  CSS values, and metadata as the spec. A port is scheduled only when a
+  `NCTGraphiteScene`, `NCTGraphiteChart` — each as a new
+  `NCTGraphite…` React component written from scratch against the
+  inventory description plus the Noct component's `*Meta` (props, slots,
+  emits, examples) as the behavior contract. Mine the donor source only
+  for visual and interaction details (CSS values, keyboard handling,
+  edge cases); no donor logic code crosses over, so donor defects
+  (`new Function()` evaluators, `querySelector` store lookup,
+  `window`-leaked state, hardcoded registry/palette lists) are not
+  carried forward. A build is scheduled only when a
   functional app (or NCTGraphite Studio, Phase 4) has a screen for it.
-- **Redesign, never port**: the logic tags (already rebuilt in Phase 1
+- **Redesign, never rebuild-from-donor**: the logic tags (already rebuilt in Phase 1
   from their surface design), `noct-store` (superseded by
   `NCTGraphiteStore`/`NCTGraphiteScope`), `noct-flow`/`noct-flow-node`
   (rebuilt as `NCTGraphiteFlow` for Studio's wiring view), and
@@ -947,7 +966,7 @@ change per component.
 |---|---|---|---|---|---|
 | Component runtime | NCTGraphite (React) | Own GitHub repo `@nct/nctgraphite`, included by each app as a submodule + workspace dep (§4.5) | Imports NCTGraphite components; deletes `src/controls/` as screens migrate | Imports NCTGraphite for windows/menus/panels | Donor backlog from Phase 3; later a consumer itself, never a host dependency |
 | Layout system | NCTGraphite `NCTGraphiteStack/Grid/Dock/…` | Builds the primitives both shells hand-roll | First consumer; edits own views in NCTGraphite Studio | Consumer for panels/shell | `noct-stack/grid` are behavior references |
-| Theming | `NCTGraphiteTheme.css` + `NCTGraphiteDark` | Owns tokens + both themes | `--bg-0…` mapped once; its look becomes theme #2 | `--dp-*` mapped once, window chrome first | Token naming + styleguide are design input |
+| Theming | `NCTGraphiteTheme.css` + `themes.json` | Owns tokens + all three themes (`NCTGraphiteDark` default, `NCTClassicDark`, reserved `NCTTechDesMVD`) | `--bg-0…` mapped once; its current look is the default theme | `--dp-*` mapped once, window chrome first | Token naming + styleguide are design input (→ `NCTClassicDark`) |
 | XML parser | NCTGraphite (from NibGlider) | Hosts parser + validator + `NCTGraphiteView` | Imports `.nctgraphite.xml` via `?raw` | Donates parser; deletes its 3 parsers via adapters (Phase 2) | XML surface ideas (`noct-define`) mined in Phase 3 |
 | Bindings/logic | NCTGraphite evaluator + `NCTGraphiteScope` | Implements evaluator, scope, logic tags | Zod store is the model host scope | `FieldBinding` contract generalizes to `NCTGraphiteBindingScope` | Logic-tag surface is the design; eval engine is discarded |
 | Builder | NCTGraphite Studio (in NCTGraphite repo) | `apps/NCTGraphiteStudio`; consumes the library like an external app | Opens its views in NCTGraphite Studio; contributes back through the submodule loop | Scene-surface customer (in-canvas overlays) | Palette/properties/flow ideas mined in Phase 4 |
@@ -1015,8 +1034,8 @@ What each project should **stop** doing immediately (cheap, high value):
 
 **Why a shared library from the functional apps, and why React.** This
 revision's central judgment is ordering: the previous version converted
-the experimental kit first, which would have spent the port budget on
-~55 components no shipping app has validated, with APIs answerable to
+the experimental kit first, which would have spent the build budget on
+63 components no shipping app has validated, with APIs answerable to
 demos rather than to two different real applications. Seeding
 `NCTGraphite/` from the functional apps' actual duplication means every
 library API is forced to generalize across a task manager and a vector
@@ -1059,10 +1078,10 @@ per step. Its Paper.js/key-click core is never in scope.
 
 **Alternatives considered and rejected.**
 (a) *Convert `noct-code-appkit` to React first and make it the kit* (the
-previous version of this plan): one mechanical port, but it validates
+previous version of this plan): one mechanical conversion, but it validates
 nothing — APIs stay hypothetical until the functional apps adopt them,
-and the port budget is spent on components that may never be used.
-Demoted to Phase-3 donor mining, where each port is justified by a
+and the build budget is spent on components that may never be used.
+Demoted to Phase-3 donor mining, where each fresh build is justified by a
 named screen.
 (b) *Keep Lit + generated React wrappers* (the first version of this
 plan): preserves framework-agnostic tags and CDN delivery, but pays the
@@ -1078,12 +1097,15 @@ fastest to a polished app, but abandons the NCTGraphite tag language, the
 AI catalog contract, the dark-pro density you have art-directed, and the
 NibGlider XML investment — i.e. abandons the stated goal.
 
-**Decisions needed from you** (runtime, sequencing, name, and the
-submodule dependency model are now settled per your answers; NCTGraphite
-Studio lives in the NCTGraphite repo per your answers):
-1. Confirm `NCTGraphiteDark` (rectangular, bevelled) as the default
-   NCTGraphite theme with NCT's teal/rounded look as theme #2 — or is
-   NCT's current look the intended default for future apps?
+**Decisions needed from you** (runtime, sequencing, name, the
+submodule dependency model, and the default theme are now settled per
+your answers; NCTGraphite Studio lives in the NCTGraphite repo per your
+answers):
+1. ~~Confirm `NCTGraphiteDark` (rectangular, bevelled) as the default
+   NCTGraphite theme with NCT's teal/rounded look as theme #2~~ —
+   resolved: `NCTGraphiteDark` is NCT's current look (default);
+   NoctCode rectangular ships as `NCTClassicDark`; `NCTTechDesMVD`
+   reserved for grid-paint-labs-idiom demo artifacts. See `themes.json`.
 
 ---
 
