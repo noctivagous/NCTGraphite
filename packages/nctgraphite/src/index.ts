@@ -38,6 +38,8 @@ export {
   NCTGraphiteStageBody, NCTGraphiteStagePanel, NCTGraphiteStageMain,
   NCTGraphiteStageFooter,
 } from './components/NCTGraphiteStage.js';
+export { NCTGraphiteAppShell, NCTGraphiteAppShellMeta } from './components/NCTGraphiteAppShell.js';
+export type { NCTGraphiteAppShellProps } from './components/NCTGraphiteAppShell.js';
 export type {
   NCTGraphiteStageProps, NCTGraphiteStageBodyProps,
   NCTGraphiteStagePanelProps, NCTGraphiteStageMainProps,
