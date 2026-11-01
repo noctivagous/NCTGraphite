@@ -12,6 +12,7 @@ export const NCTGraphiteKeyMapMeta: NCTGraphiteComponentMeta = {
     onRebind: { type: 'function', required: true, description: '(id | null) => void to arm/cancel rebinding' },
     heldActions: { type: 'object', required: false, description: 'held action ids, from useNCTGraphiteCommands; held rows highlight' },
     emphasizeIds: { type: 'object', required: false, description: 'action ids whose chips carry the accent treatment persistently' },
+    showRebind: { type: 'boolean', required: false, description: 'When true, show per-row REBIND buttons (default false)' },
   },
   emits: [],
   dependencies: ['useNCTGraphiteCommands'],
@@ -20,38 +21,82 @@ export const NCTGraphiteKeyMapMeta: NCTGraphiteComponentMeta = {
 export interface NCTGraphiteKeyMapProps {
   commands: NCTGraphiteCommandDef[];
   keyMap: Record<string, string>;
-  rebinding: string | null;
-  onRebind: (id: string | null) => void;
+  rebinding?: string | null;
+  onRebind?: (id: string | null) => void;
   heldActions?: Set<string>;
   emphasizeIds?: Set<string>;
+  /** Per-row REBIND controls (off by default in talk/demo labs). */
+  showRebind?: boolean;
 }
 
 /**
- * Key-click map rows (lab idiom): kbd chip, label/desc, rebind button.
- * Held rows highlight violet while their key is down (hex-lab idiom).
+ * Key-click map rows (Dot Shading / Hull lab idiom): card row, kbd chip, label/desc, rebind.
+ * Held rows highlight violet while their key is down.
  */
-export function NCTGraphiteKeyMap({ commands, keyMap, rebinding, onRebind, heldActions, emphasizeIds }: NCTGraphiteKeyMapProps) {
+export function NCTGraphiteKeyMap({
+  commands,
+  keyMap,
+  rebinding = null,
+  onRebind,
+  heldActions,
+  emphasizeIds,
+  showRebind = false,
+}: NCTGraphiteKeyMapProps) {
   const held = heldActions ?? new Set<string>();
   const emphasized = emphasizeIds ?? new Set<string>();
   return (
-    <div className="flex flex-col gap-2">
-      {commands.map((c) => (
-        <div key={c.id} className="flex items-center gap-2">
-          <div className={`w-6 h-6 shrink-0 rounded-[6px] border grid place-items-center text-[11px] font-bold text-white ${held.has(c.id) || emphasized.has(c.id) ? 'bg-[#7c5cff] border-[#7c5cff]' : 'bg-[#15151e] border-[#23232f]'}`}>
-            {(keyMap[c.id] ?? c.defaultKey).toUpperCase()}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[11px] font-bold text-white">{c.label}</div>
-            <div className="text-[9px] text-[#7a7680] truncate">{c.desc}</div>
-          </div>
-          <button
-            onClick={() => onRebind(rebinding === c.id ? null : c.id)}
-            className={`px-2 py-1 rounded text-[9px] font-bold ${rebinding === c.id ? 'bg-[#00e5ff] text-black' : 'bg-[#15151e] border border-[#23232f] text-[#7a7680] hover:text-white'}`}
+    <div className="space-y-2">
+      {commands.map((c) => {
+        const active = held.has(c.id);
+        const isRebinding = showRebind && rebinding === c.id;
+        const keyDisplay = (keyMap[c.id] ?? c.defaultKey).toUpperCase();
+        const chipAccent = !active && emphasized.has(c.id);
+        return (
+          <div
+            key={c.id}
+            className={`group flex items-center gap-2.5 rounded-[12px] border px-2.5 py-2.5 transition ${
+              active
+                ? 'bg-[#7c5cff] border-[#7c5cff] text-white shadow-[0_0_0_3px_rgba(124,92,255,0.25)]'
+                : isRebinding
+                  ? 'bg-[#1a1a24] border-[#00e5ff]'
+                  : 'bg-[#1a1a24] border-white/10 hover:border-white/20'
+            }`}
           >
-            {rebinding === c.id ? 'PRESS KEY…' : 'REBIND'}
-          </button>
-        </div>
-      ))}
+            <div
+              className={`h-8 min-w-[40px] shrink-0 grid place-items-center rounded-[8px] text-[12px] font-bold border [font-family:var(--font-alt-mono)] ${
+                active
+                  ? 'bg-white text-[#0e0e14] border-white'
+                  : chipAccent
+                    ? 'bg-[#7c5cff] border-[#7c5cff] text-white'
+                    : 'bg-[#0e0e14] border-white/15 text-white'
+              }`}
+            >
+              {keyDisplay}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] font-bold tracking-wide leading-none truncate [font-family:var(--font-alt-mono)]">
+                {c.label.toUpperCase()}
+              </div>
+              <div className="text-[10px] opacity-60 truncate [font-family:var(--font-alt-mono)]">{c.desc}</div>
+            </div>
+            {showRebind && onRebind && (
+              <button
+                type="button"
+                onClick={() => onRebind(isRebinding ? null : c.id)}
+                className={`shrink-0 text-[9px] tracking-[0.08em] px-2 py-1.5 rounded-[8px] border font-bold transition [font-family:var(--font-alt-mono)] ${
+                  isRebinding
+                    ? 'bg-[#00e5ff] text-black border-[#00e5ff]'
+                    : active
+                      ? 'bg-white/15 border-white/30 text-white hover:bg-white/25'
+                      : 'bg-[#0e0e14] border-white/15 text-white/50 hover:text-white hover:border-white/30'
+                }`}
+              >
+                {isRebinding ? 'KEY…' : 'REBIND'}
+              </button>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
