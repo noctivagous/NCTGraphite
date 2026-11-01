@@ -1,4 +1,5 @@
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
+import { NCTGraphiteParamLabel } from './NCTGraphiteHint.js';
 
 export const NCTGraphiteSliderMeta: NCTGraphiteComponentMeta = {
   tag: 'NCTGraphiteSlider',
@@ -12,6 +13,7 @@ export const NCTGraphiteSliderMeta: NCTGraphiteComponentMeta = {
     step: { type: 'number', default: 1, description: 'Range step' },
     format: { type: 'function', required: false, description: '(v: number) => string for the readout' },
     onChange: { type: 'function', required: true, description: '(v: number) => void' },
+    hint: { type: 'string', required: false, description: 'Optional ? tooltip beside the label' },
   },
   emits: [],
   dependencies: [],
@@ -25,17 +27,15 @@ export interface NCTGraphiteSliderProps {
   step?: number;
   format?: (v: number) => string;
   onChange: (v: number) => void;
+  hint?: string;
 }
 
 /** Labeled range slider with live value readout (lab control-panel idiom). */
-export function NCTGraphiteSlider({ label, value, min, max, step = 1, format, onChange }: NCTGraphiteSliderProps) {
+export function NCTGraphiteSlider({ label, value, min, max, step = 1, format, onChange, hint }: NCTGraphiteSliderProps) {
   const text = format ? format(value) : String(value);
   return (
     <div>
-      <div className="flex justify-between text-[10px] mb-1">
-        <span>{label}</span>
-        <span>{text}</span>
-      </div>
+      <NCTGraphiteParamLabel label={label} hint={hint} trailing={text} />
       <input
         type="range"
         className="nctgraphite-slider w-full"

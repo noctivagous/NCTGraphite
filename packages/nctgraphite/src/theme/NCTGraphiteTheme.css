@@ -122,6 +122,57 @@ input[type="range"].nctgraphite-slider::-webkit-slider-thumb {
   cursor: pointer;
   border: 2px solid var(--bg);
 }
+/* Stage keeps keyboard focus; the ring would flash every time a panel control returns it. */
+[data-nct-stage]:focus {
+  outline: none;
+}
+
+.nctgraphite-hint-trigger {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: help;
+  display: inline-flex;
+  line-height: 0;
+  vertical-align: middle;
+}
+.nctgraphite-hint-trigger:hover,
+.nctgraphite-hint-trigger:focus-visible {
+  color: var(--accent);
+  outline: none;
+}
+.nctgraphite-hint-icon {
+  display: block;
+}
+.nctgraphite-hint-circle {
+  fill: var(--panel-2);
+  stroke: currentColor;
+  stroke-width: 1;
+}
+.nctgraphite-hint-glyph {
+  fill: currentColor;
+  font-family: var(--font-alt-mono, ui-monospace, monospace);
+  font-size: 9px;
+  font-weight: 700;
+}
+.nctgraphite-popover {
+  z-index: 10000;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 16px));
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-2);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
 input[type="range"].nctgraphite-slider::-moz-range-thumb {
   width: 14px;
   height: 14px;

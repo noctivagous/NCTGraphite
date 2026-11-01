@@ -68,9 +68,13 @@ export interface NCTGraphiteStageMainProps {
   children: ReactNode;
 }
 
-/** Canvas main area. */
+/** Canvas main area. Holds keyboard focus so panel controls do not keep it. */
 export function NCTGraphiteStageMain({ className = '', children }: NCTGraphiteStageMainProps) {
-  return <main className={`nctgraphite-stage-main ${className}`}>{children}</main>;
+  return (
+    <main data-nct-stage="" tabIndex={-1} className={`nctgraphite-stage-main ${className}`}>
+      {children}
+    </main>
+  );
 }
 
 export interface NCTGraphiteStageFooterProps {

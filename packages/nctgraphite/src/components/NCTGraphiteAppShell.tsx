@@ -1,7 +1,8 @@
-import { Children } from 'react';
+import { Children, useEffect, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
 import { NCTGraphiteGrid } from './NCTGraphiteGrid.js';
+import { bindStageFocus } from '../bindings/NCTGraphiteStageFocus.js';
 
 export const NCTGraphiteAppShellMeta: NCTGraphiteComponentMeta = {
   tag: 'NCTGraphiteAppShell',
@@ -91,9 +92,16 @@ export function NCTGraphiteAppShell({
   // Row shells stack to a single column below lg (the StageBody / shading-lab
   // idiom); the proportion track applies at/above lg. Column shells stack natively.
   const wideTracks = orientation === 'row' ? tracks.columns : undefined;
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return undefined;
+    return bindStageFocus(root);
+  }, []);
 
   return (
     <div
+      ref={rootRef}
       data-safe-area-inset-root
       className={`min-h-screen w-full flex flex-col ${className}`}
       style={{ boxSizing: 'border-box', paddingTop: 'var(--safe-area-inset-top)', maxWidth: toCssWidth(maxWidth), minWidth: toCssWidth(minWidth), marginInline: 'auto', ...style }}

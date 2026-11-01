@@ -1,4 +1,5 @@
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
+import { NCTGraphiteParamLabel } from './NCTGraphiteHint.js';
 
 export const NCTGraphiteSegmentedMeta: NCTGraphiteComponentMeta = {
   tag: 'NCTGraphiteSegmented',
@@ -9,6 +10,7 @@ export const NCTGraphiteSegmentedMeta: NCTGraphiteComponentMeta = {
     options: { type: 'array', required: true, description: '{value, label}[] choices' },
     value: { type: 'string', required: true, description: 'Selected value' },
     onChange: { type: 'function', required: true, description: '(v: string) => void' },
+    hint: { type: 'string', required: false, description: 'Optional ? tooltip beside the label' },
   },
   emits: [],
   dependencies: [],
@@ -24,17 +26,14 @@ export interface NCTGraphiteSegmentedProps {
   options: NCTGraphiteSegmentedOption[];
   value: string;
   onChange: (v: string) => void;
+  hint?: string;
 }
 
 /** Single-select segmented row for mode/option pickers (lab idiom). */
-export function NCTGraphiteSegmented({ label, options, value, onChange }: NCTGraphiteSegmentedProps) {
+export function NCTGraphiteSegmented({ label, options, value, onChange, hint }: NCTGraphiteSegmentedProps) {
   return (
     <div>
-      {label ? (
-        <div className="flex justify-between text-[10px] mb-1">
-          <span>{label}</span>
-        </div>
-      ) : null}
+      {label ? <NCTGraphiteParamLabel label={label} hint={hint} /> : null}
       <div className="flex gap-1 p-1 rounded-[8px] bg-[#15151e] border border-[#23232f]">
         {options.map((opt) => {
           const active = opt.value === value;

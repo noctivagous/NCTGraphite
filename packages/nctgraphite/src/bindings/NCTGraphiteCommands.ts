@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NCTGraphiteComponentMeta } from '../components/NCTGraphiteMeta.js';
+import { isTextEntryTarget } from './NCTGraphiteStageFocus.js';
 
 export const NCTGraphiteCommandsMeta: NCTGraphiteComponentMeta = {
   tag: 'useNCTGraphiteCommands',
@@ -107,7 +108,7 @@ export function useNCTGraphiteCommands({ commands, onAction, onKeyUp, onRebind, 
       return found;
     };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (ignoreInputs && e.target instanceof HTMLInputElement) return;
+      if (ignoreInputs && isTextEntryTarget(e.target)) return;
       const key = e.key.toLowerCase();
       if (rebindingRef.current) {
         e.preventDefault();
