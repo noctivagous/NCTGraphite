@@ -17,6 +17,9 @@ export type { NCTGraphiteSwatchProps } from './components/NCTGraphiteSwatch.js';
 export { NCTGraphiteToggle, NCTGraphiteToggleMeta } from './components/NCTGraphiteToggle.js';
 export type { NCTGraphiteToggleProps } from './components/NCTGraphiteToggle.js';
 
+export { NCTGraphiteButton, NCTGraphiteButtonMeta } from './components/NCTGraphiteButton.js';
+export type { NCTGraphiteButtonProps } from './components/NCTGraphiteButton.js';
+
 export {
   NCTGraphitePopover, NCTGraphitePopoverMeta, computeNCTGraphitePopoverPosition,
 } from './components/NCTGraphitePopover.js';
