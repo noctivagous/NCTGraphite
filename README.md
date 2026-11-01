@@ -3,6 +3,48 @@
 NCTGraphite is to be a shared React component library, tag language, and GUI-builder
 home for NCT web applications.
 
+## Editorial Section
+
+Software development and programming involved planning the code base and
+utilizing existing frameworks, most often provided by the operating system
+vendor, so that the same resources weren't unnecessarily remade.  It was
+necessity or at least minimum efficiency.  Without trying, it amounted to
+schematics for the code base for a person to follow.  Now with AI, the models
+are not instructed to follow or generate such schematics for the code bases first, nor
+do they need to make use of established software frameworks.  They're generating heaps 
+of custom code for applications, writing buttons and window code from scratch for
+each application, in a different way custom for that app, and it is producing an
+unrecognized mess.  A causal factor is that there is little overlap between
+application software developers and the field of AI, so the AI companies don't know 
+see the seriousness of this and they don't know how to deal with it except make bigger 
+and more advanced models that sort through code even more strongly.
+
+What we're seeing are a lot of novice software development mistakes like this
+made at an advanced level of code generation by AI companies with advanced
+research.  Even if the AI generates the code, the code still needs to follow a
+blueprint or a plan.  It should have schematics, and be normal, not just
+accomplish the thing by spinning custom code for every project.  That it
+doesn't, and people are not trying to adhere to this, is what results in "slop."
+ In a lot of ways there is a mentality at the AI companies that they can throw
+out all of the old practices and rules of software development, focus on the
+models exclusively, and run forward with results as the measurement of success
+rather than how it is made being seen as important too.  However, this has been
+a problem in the web development community too, for a decade and a half, with
+the embrace of JavaScript for computer programs, a programming language that
+doesn't have typed variables.  The web programming makes up the majority of
+activity and so these problems won't be discussed.  
+
+A software engineer with genuine standards from the past will have a problem
+with TypeScript's features never being officially incorporated into JavaScript
+and TypeScript always being made out of JavaScript and widely adopted.  It's
+unnecessary to do that and it is a standard that shouldn't be crossed for very
+long.  TypeScript would be a temporary fix before people all agree that its
+features are put into JavaScript.  Never would it be acceptable that TypeScript
+comes out with new versions incompatible with the past and other things that
+lack standards.  None of this is controversial to someone who wrote apps in 2011
+and earlier.  The growing mess is self-evident.
+
+
 ## Purpose
 
 When web applications, including React JS applications, are made with AI
