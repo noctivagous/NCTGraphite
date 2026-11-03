@@ -14,6 +14,7 @@ export function defaultsFor(kind: Kind): Node['props'] {
   if (kind === 'panel') return { variant: 'raised' };
   if (kind === 'toolbar') return { size: 'md' };
   if (kind === 'iconButton') return { variant: 'ghost' };
+  if (kind === 'window') return { resizable: true };
   return {};
 }
 
@@ -34,6 +35,17 @@ export function coerceInput(raw: string): string | number | boolean {
 }
 
 export type DropZone = 'before' | 'inside' | 'after';
+
+/** Palette glyphs that read as the control itself, Proshade style. */
+export const PALETTE_ICONS: Record<string, string> = {
+  accordion: '▤', columns: '❚❚', grid: '▦', layoutItem: '◽', overlay: '◧',
+  panel: '▣', row: '⇔', scene: '◈', sceneItem: '◇', stack: '⊞', toolbar: '⬒',
+  button: '◫', checkbox: '☑', dualRange: '↔', fader: '↕', field: '▭',
+  iconButton: '◈', imageWell: '◩', knob: '◎', list: '☷', meter: '▂',
+  progress: '▬', segmented: '⧉', separator: '―', slider: '◉', tabs: '▥',
+  text: 'T', textArea: '☰', toggle: '◐', valueDisplay: '◔', module: '▢',
+  window: '⊡',
+};
 
 export type ReparentResult =
   | { root: Node; placedId: string; note: string }

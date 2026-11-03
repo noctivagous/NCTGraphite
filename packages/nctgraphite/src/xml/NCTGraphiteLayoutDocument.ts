@@ -14,7 +14,7 @@ export type LayoutKind =
   | 'field' | 'textArea' | 'checkbox' | 'tabs' | 'list'
   | 'imageWell' | 'separator' | 'progress'
   | 'knob' | 'fader' | 'dualRange' | 'meter' | 'valueDisplay'
-  | 'slider' | 'toggle' | 'segmented' | 'panel' | 'toolbar';
+  | 'slider' | 'toggle' | 'segmented' | 'panel' | 'toolbar' | 'window';
 
 export type LayoutPropValue = string | number | boolean;
 
@@ -38,13 +38,15 @@ export interface SavedLayoutModule {
 export interface LayoutDocument {
   name: string;
   density: 'compact' | 'comfortable';
+  /** App-level appearance theme for the edited app (Studio chrome is unaffected). */
+  theme?: 'light' | 'dark' | 'lab';
   root: LayoutNode;
   modules: SavedLayoutModule[];
 }
 
 export const layoutContainers: LayoutKind[] = [
   'stack', 'row', 'grid', 'overlay', 'accordion', 'columns', 'scene', 'sceneItem', 'layoutItem',
-  'panel', 'toolbar',
+  'panel', 'toolbar', 'window',
 ];
 
 export const layoutKindLabels: Record<LayoutKind, string> = {
@@ -79,6 +81,7 @@ export const layoutKindLabels: Record<LayoutKind, string> = {
   segmented: 'Segmented control',
   panel: 'Panel',
   toolbar: 'Toolbar',
+  window: 'Window',
 };
 
 function freshId(): string {
@@ -216,6 +219,7 @@ export function validLayoutDocument(value: unknown): value is LayoutDocument {
   if (!value || typeof value !== 'object') return false;
   const doc = value as LayoutDocument;
   if (typeof doc.name !== 'string' || !['compact', 'comfortable'].includes(doc.density)) return false;
+  if (doc.theme !== undefined && !['light', 'dark', 'lab'].includes(doc.theme)) return false;
   if (!Array.isArray(doc.modules)) return false;
   const ids = new Set<string>();
   if (!doc.modules.every((m) => validLayoutModule(m, doc.modules, ids))) return false;

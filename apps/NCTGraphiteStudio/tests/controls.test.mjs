@@ -111,6 +111,7 @@ test('XML round-trips the new control kinds with props and options', () => {
   const doc = () => ({
     name: 'Controls app',
     density: 'comfortable',
+    theme: 'light',
     modules: [],
     root: {
       id: 'root', kind: 'stack', label: 'App', props: {}, children: [

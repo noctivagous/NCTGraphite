@@ -48,6 +48,7 @@ const KIND_TO_TAG: Record<LayoutKind, string> = {
   segmented: 'NCTGraphiteSegmented',
   panel: 'NCTGraphitePanel',
   toolbar: 'NCTGraphiteToolbar',
+  window: 'NCTGraphiteWindow',
   iconButton: 'NCTGraphiteButton',
 };
 
@@ -81,6 +82,7 @@ const TAG_TO_KIND: Record<string, LayoutKind> = {
   NCTGraphiteSegmented: 'segmented',
   NCTGraphitePanel: 'panel',
   NCTGraphiteToolbar: 'toolbar',
+  NCTGraphiteWindow: 'window',
 };
 
 export function layoutTagFor(node: LayoutNode): string {
@@ -131,7 +133,7 @@ export function serializeLayoutDocument(doc: LayoutDocument): string {
     .join('\n');
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    `<${LAYOUT_XML_ROOT} kind="${NCTGRAPHITE_LAYOUT_KIND}" version="${NCTGRAPHITE_LAYOUT_VERSION}" name="${escapeAttr(doc.name)}" density="${doc.density}">`,
+    `<${LAYOUT_XML_ROOT} kind="${NCTGRAPHITE_LAYOUT_KIND}" version="${NCTGRAPHITE_LAYOUT_VERSION}" name="${escapeAttr(doc.name)}" density="${doc.density}" theme="${doc.theme ?? 'light'}">`,
     '  <Modules>',
     mods,
     '  </Modules>',
@@ -235,6 +237,7 @@ export function parseLayoutDocument(xml: string): LayoutDocument {
   const doc: LayoutDocument = {
     name: unescapeAttr(root.attrs.name ?? 'Untitled'),
     density: root.attrs.density === 'comfortable' ? 'comfortable' : 'compact',
+    theme: root.attrs.theme === 'dark' || root.attrs.theme === 'lab' ? root.attrs.theme : 'light',
     root: elementToNode(rootEl.children[0]),
     modules,
   };

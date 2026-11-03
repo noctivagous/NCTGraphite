@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
-import { NCTGraphiteAccordion, NCTGraphiteButton, NCTGraphiteCheckbox, NCTGraphiteColumns, NCTGraphiteDualRange, NCTGraphiteFader, NCTGraphiteField, NCTGraphiteGrid, NCTGraphiteImageWell, NCTGraphiteKnob, NCTGraphiteLayoutItem, NCTGraphiteList, NCTGraphiteMeter, NCTGraphiteOverlay, NCTGraphitePanel, NCTGraphiteProgress, NCTGraphiteScene, NCTGraphiteSceneItem, NCTGraphiteSegmented, NCTGraphiteSeparator, NCTGraphiteSlider, NCTGraphiteStack, NCTGraphiteTabs, NCTGraphiteTextArea, NCTGraphiteToggle, NCTGraphiteToolbar, NCTGraphiteValueDisplay } from '@nct/nctgraphite';
+import { NCTGraphiteAccordion, NCTGraphiteButton, NCTGraphiteCheckbox, NCTGraphiteColumns, NCTGraphiteDualRange, NCTGraphiteFader, NCTGraphiteField, NCTGraphiteGrid, NCTGraphiteImageWell, NCTGraphiteKnob, NCTGraphiteLayoutItem, NCTGraphiteList, NCTGraphiteMeter, NCTGraphiteOverlay, NCTGraphitePanel, NCTGraphiteProgress, NCTGraphiteScene, NCTGraphiteSceneItem, NCTGraphiteSegmented, NCTGraphiteSeparator, NCTGraphiteSlider, NCTGraphiteStack, NCTGraphiteTabs, NCTGraphiteTextArea, NCTGraphiteToggle, NCTGraphiteToolbar, NCTGraphiteValueDisplay, NCTGraphiteWindow } from '@nct/nctgraphite';
 import { parseNCTOptionList, resolveNodeProp, type AppLogic, type PreviewValues } from '@nct/nctgraphite';
 import { containers, labels, resizeSceneRect } from '../model';
 import type { Node, SavedModule, SceneRect } from '../model';
@@ -188,6 +188,7 @@ export function Preview({ node, modules, selected, select, logic, values, onValu
     }
     case 'panel': content = <NCTGraphitePanel title={node.label} {...node.props}>{children}</NCTGraphitePanel>; break;
     case 'toolbar': content = <NCTGraphiteToolbar {...node.props}>{children}</NCTGraphiteToolbar>; break;
+    case 'window': content = <NCTGraphiteWindow title={node.label} {...node.props}>{children}</NCTGraphiteWindow>; break;
     case 'iconButton': content = <NCTGraphiteButton label={logic && values ? String(resolveNodeProp(node, logic, values)) : node.label} {...node.props} variant="ghost" onClick={command ? () => onCommand?.(command) : undefined} />; break;
     case 'module': {
       const def = modules.find(m => m.id === node.moduleId);

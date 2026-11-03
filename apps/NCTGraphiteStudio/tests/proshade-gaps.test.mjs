@@ -11,6 +11,7 @@ const model = await server.ssrLoadModule('./src/model.ts');
 const doc = () => ({
   name: 'Proshade gaps',
   density: 'compact',
+  theme: 'light',
   modules: [],
   root: {
     id: 'root', kind: 'stack', label: 'App', props: {}, children: [
@@ -150,4 +151,87 @@ test('tree moves respect containers and cycles for the new kinds', () => {
   const moved = lib.moveLayoutNode(root, 'slider', 'toolbar', 1);
   assert.equal(moved.children[1].children[1].id, 'slider');
   assert.deepEqual(lib.moveLayoutNode(root, 'panel', 'slider', 0), root);
+});
+
+test('studio UI prefs remember open panels and AI chat across reload', async () => {
+  const ui = await server.ssrLoadModule('./src/studio/constants.ts');
+  const g = globalThis;
+  const prev = g.localStorage;
+  const mem = {};
+  g.localStorage = {
+    getItem: k => (k in mem ? mem[k] : null),
+    setItem: (k, v) => { mem[k] = String(v); },
+    removeItem: k => { delete mem[k]; },
+  };
+  try {
+    assert.equal(ui.loadStudioUi().aiOpen, false);
+    assert.deepEqual(ui.loadStudioUi().sections, {});
+    mem['nctgraphite-studio:ui:v1'] = JSON.stringify({ aiOpen: true, zoom: 150, sections: { 'insp:tree': false } });
+    const loaded = ui.loadStudioUi();
+    assert.equal(loaded.aiOpen, true);
+    assert.equal(loaded.zoom, 150);
+    assert.equal(loaded.renderMode, 'app');
+    assert.deepEqual(loaded.workspace, { x: 0, y: 0 });
+    mem['nctgraphite-studio:ui:v1'] = JSON.stringify({ renderMode: 'outline', workspace: { x: 9999, y: -30 } });
+    const again = ui.loadStudioUi();
+    assert.equal(again.renderMode, 'outline');
+    assert.deepEqual(again.workspace, { x: 2000, y: -30 });
+    mem['nctgraphite-studio:ui:v1'] = JSON.stringify({ renderMode: 'neon' });
+    assert.equal(loaded.sections['insp:tree'], false);
+    mem['nctgraphite-studio:ui:v1'] = 'not json';
+    assert.equal(ui.loadStudioUi().aiOpen, false);
+  } finally {
+    if (prev === undefined) delete g.localStorage; else g.localStorage = prev;
+  }
+});
+
+test('calculator commands drive the starter app in play mode', async () => {
+  const starter = await server.ssrLoadModule('./src/studio/starter.ts');
+  const run = ids => ids.reduce((s, id) => starter.calcStep(s, id), starter.calcInitial());
+  assert.equal(run(['digit7', 'add', 'digit8', 'eq']).display, '15');
+  assert.equal(run(['digit2', 'mul', 'digit3', 'add']).display, '6');
+  assert.equal(run(['digit5', 'div', 'digit0', 'eq']).display, 'Error');
+  assert.equal(run(['digit5', 'div', 'digit0', 'eq', 'digit1']).display, '1');
+  assert.equal(run(['digit5', 'dot', 'digit5', 'add', 'digit2', 'eq']).display, '7.5');
+  assert.equal(run(['digit9', 'neg']).display, '-9');
+  assert.equal(run(['digit5', 'digit0', 'pct']).display, '0.5');
+  assert.equal(run(['digit1', 'clear']).display, '0');
+  const fresh = starter.calcInitial();
+  assert.equal(starter.calcStep(fresh, 'nope'), fresh);
+  const logic = starter.starterLogic();
+  const commandIds = new Set(logic.commands.map(c => c.id));
+  for (const key of starter.starterProject().root.children.flatMap(c => c.children)) {
+    if (key.kind !== 'button') continue;
+    const binding = logic.bindings.find(b => b.nodeId === key.id && typeof b.commandId === 'string');
+    assert.ok(binding, `${key.id} has no command binding`);
+    assert.ok(commandIds.has(binding.commandId), `${key.id} binds unknown command ${binding.commandId}`);
+  }
+});
+
+test('layout documents carry an app-level appearance theme', () => {
+  const base = { name: 'D', density: 'compact', modules: [], root: { id: 'r', kind: 'scene', label: 'R', props: {}, children: [] } };
+  assert.equal(lib.validLayoutDocument({ ...base, theme: 'dark' }), true);
+  assert.equal(lib.validLayoutDocument({ ...base, theme: 'lab' }), true);
+  assert.equal(lib.validLayoutDocument(base), true);
+  assert.equal(lib.validLayoutDocument({ ...base, theme: 'neon' }), false);
+  const xml = lib.serializeLayoutDocument({ ...base, theme: 'dark' });
+  assert.match(xml, /theme="dark"/);
+  assert.equal(lib.parseLayoutDocument(xml).theme, 'dark');
+  assert.equal(lib.parseLayoutDocument(lib.serializeLayoutDocument(base)).theme, 'light');
+});
+
+test('window kind registers with resizable and dock props', async () => {
+  const nodes = await server.ssrLoadModule('./src/studio/nodes.ts');
+  assert.ok(lib.layoutContainers.includes('window'));
+  assert.equal(lib.layoutKindLabels.window, 'Window');
+  const entry = lib.buildLayoutCatalog().find(e => e.kind === 'window');
+  assert.equal(entry.tag, 'NCTGraphiteWindow');
+  assert.equal(entry.meta.props.resizable.default, true);
+  assert.deepEqual(entry.meta.props.dock.type, ['none', 'left', 'right', 'top', 'bottom']);
+  assert.ok(lib.editablePropsFor('window').includes('resizable'));
+  assert.deepEqual(nodes.defaultsFor('window'), { resizable: true });
+  const doc = { name: 'W', density: 'compact', theme: 'light', modules: [], root: { id: 'r', kind: 'stack', label: 'App', props: {}, children: [{ id: 'w', kind: 'window', label: 'Palette', props: { resizable: false, dock: 'right', width: 280 }, children: [] }] } };
+  const back = lib.parseLayoutDocument(lib.serializeLayoutDocument(doc));
+  assert.deepEqual(back, doc);
+  assert.match(lib.serializeLayoutDocument(doc), /NCTGraphiteWindow/);
 });

@@ -25,6 +25,7 @@ import { NCTGraphiteToggle } from '../components/NCTGraphiteToggle.js';
 import { NCTGraphiteSegmented } from '../components/NCTGraphiteSegmented.js';
 import { NCTGraphitePanel } from '../components/NCTGraphitePanel.js';
 import { NCTGraphiteToolbar } from '../components/NCTGraphiteToolbar.js';
+import { NCTGraphiteWindow } from '../components/NCTGraphiteWindow.js';
 import type { LayoutNode, SavedLayoutModule } from './NCTGraphiteLayoutDocument.js';
 
 /** Parse a document `options` prop ("One, Two, Three") into labeled options.
@@ -153,6 +154,8 @@ export function NCTGraphiteLayoutView({
       return <NCTGraphitePanel {...node.props} title={node.label}>{children}</NCTGraphitePanel>;
     case 'toolbar':
       return <NCTGraphiteToolbar {...node.props}>{children}</NCTGraphiteToolbar>;
+    case 'window':
+      return <NCTGraphiteWindow title={node.label} {...node.props}>{children}</NCTGraphiteWindow>;
     case 'iconButton':
       return <NCTGraphiteButton label={node.label} {...node.props} />;
     case 'module': {

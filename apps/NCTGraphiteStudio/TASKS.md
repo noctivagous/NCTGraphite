@@ -73,6 +73,8 @@ intended behavior rather than assuming every reference control is functional.
 - [x] Add canvas zoom controls, percentage readout, fit/reset, and scrolling or panning; keep selection and pointer operations accurate at each zoom.
 - [x] Add independent grid visibility and snapping controls, configurable spacing, visible guides, and predictable snapping during placement, movement, and resize.
 - [x] Add keyboard delete and duplicate shortcuts, focus-safe handling for text inputs, and accessible alternatives for moving and resizing.
+- [x] Drag the app window around a large pannable workspace by its header (design mode); pan by dragging the background; workspace position persists across reload.
+- [x] Drive the workspace dotted background from the grid spacing/visibility settings.
 
 ### Device layouts and inspector
 
@@ -82,6 +84,9 @@ intended behavior rather than assuming every reference control is functional.
 - [ ] Implement editable edge constraints/pinning and resizing behavior across viewport sizes, with clear inherited and overridden states; Proshade's pinning controls are illustrative.
 - [ ] Provide an appearance inspector for the supported widget properties, including variants, opacity, corner radius, typography and color where applicable, with theme-aware defaults.
 - [x] Expand the layers/tree panel with hierarchy, selection, ordering, useful dimensions and object counts; add functional visibility and locking if supported by the document model.
+- [x] Store an app-level appearance theme (light/dark/lab) on the document with XML round-trip and an App settings selector; Studio chrome is unaffected.
+- [x] Render wireframe and outline modes with unthemed controls via the render-mode switch (editor bar + View menu); the mode persists across reload.
+- [x] Remember open panels, device, zoom, grid prefs, AI chat state, workspace position, and render mode across reload.
 
 ### Components and workspace
 
@@ -89,6 +94,9 @@ intended behavior rather than assuming every reference control is functional.
 - [x] Complete property editing and preview behavior for Proshade controls, including tab and list contents, selected values, field placeholders, button styles, and image wells.
 - [x] Organize the workspace around a compact palette, canvas, layers and inspector with readable type hierarchy; keep the layout and density themeable instead of imposing the Proshade style on built apps.
 - [x] Add a useful canvas status/selection readout and an export inspection flow showing the actual serialized layout; keep runnable app export as a separate task.
+- [x] Provide an NCTGraphiteWindow widget (title bar, resizable property with corner handle, edge docking) across the document model, XML, catalog, renderer, palette, and inspector.
+- [x] Play the app with live commands (the calculator computes); AI menu with placeholder chat hosted in an NCTGraphiteWindow.
+- [x] Style all Studio chrome buttons (Play, module save, edit, remove) with the Studio idiom; app widgets stay on the app theme and wireframe/outline modes.
 - [ ] Test the end-to-end workflows: drag, nest, select, edit, resize, undo, device overrides, save/reopen, and keyboard alternatives. Verify visual fidelity and usability separately when browser testing is authorized.
 
 ## Follow-up from builder review

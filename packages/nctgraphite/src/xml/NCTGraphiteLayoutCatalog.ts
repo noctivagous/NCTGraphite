@@ -29,6 +29,7 @@ import { NCTGraphiteToggleMeta } from '../components/NCTGraphiteToggle.js';
 import { NCTGraphiteSegmentedMeta } from '../components/NCTGraphiteSegmented.js';
 import { NCTGraphitePanelMeta } from '../components/NCTGraphitePanel.js';
 import { NCTGraphiteToolbarMeta } from '../components/NCTGraphiteToolbar.js';
+import { NCTGraphiteWindowMeta } from '../components/NCTGraphiteWindow.js';
 import type { LayoutKind } from './NCTGraphiteLayoutDocument.js';
 
 export interface LayoutCatalogEntry {
@@ -68,6 +69,7 @@ const META_BY_KIND: { kind: LayoutKind; meta: NCTGraphiteComponentMeta }[] = [
   { kind: 'segmented', meta: NCTGraphiteSegmentedMeta },
   { kind: 'panel', meta: NCTGraphitePanelMeta },
   { kind: 'toolbar', meta: NCTGraphiteToolbarMeta },
+  { kind: 'window', meta: NCTGraphiteWindowMeta },
   { kind: 'iconButton', meta: NCTGraphiteButtonMeta },
   {
     kind: 'text',

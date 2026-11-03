@@ -10,6 +10,7 @@ const model = await server.ssrLoadModule('./src/model.ts');
 const doc = () => ({
   name: 'Test app',
   density: 'compact',
+  theme: 'light',
   modules: [{ id: 'mod-1', name: 'Card', root: { id: 'card', kind: 'stack', label: 'Card', props: { gap: 8 }, children: [{ id: 't', kind: 'text', label: 'Hi', props: {}, children: [] }] } }],
   root: {
     id: 'root', kind: 'grid', label: 'App', props: { columns: '1fr 1fr', gap: 4 }, wide: { columns: '1fr 1fr 1fr' },

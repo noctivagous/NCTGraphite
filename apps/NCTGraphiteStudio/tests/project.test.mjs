@@ -11,6 +11,7 @@ const lib = await server.ssrLoadModule('../../packages/nctgraphite/src/index.ts'
 const doc = (name = 'Test app') => ({
   name,
   density: 'compact',
+  theme: 'light',
   modules: [],
   root: {
     id: 'root', kind: 'stack', label: 'App', props: {},
