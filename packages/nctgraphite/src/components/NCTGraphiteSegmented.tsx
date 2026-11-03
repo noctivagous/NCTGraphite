@@ -34,17 +34,34 @@ export function NCTGraphiteSegmented({ label, options, value, onChange, hint }: 
   return (
     <div>
       {label ? <NCTGraphiteParamLabel label={label} hint={hint} /> : null}
-      <div className="flex gap-1 p-1 rounded-[8px] bg-[#15151e] border border-[#23232f]">
+      <div
+        className="nctgraphite-segmented flex gap-1 p-1 border"
+        role="group"
+        style={{
+          background: 'var(--nct-surface, var(--panel, #15151e))',
+          borderColor: 'var(--nct-border, var(--border, #23232f))',
+          borderRadius: 'var(--nct-control-radius, 8px)',
+        }}
+      >
         {options.map((opt) => {
           const active = opt.value === value;
           return (
             <button
               key={opt.value}
               type="button"
+              aria-pressed={active}
               onClick={() => onChange(opt.value)}
-              className={`flex-1 px-2 py-1 text-[11px] rounded-[6px] ${
-                active ? 'bg-[#7c5cff] text-white' : 'text-[#7a7680]'
-              }`}
+              className="flex-1 py-1"
+              style={{
+                paddingLeft: 'var(--nct-control-padding, 0.5rem)',
+                paddingRight: 'var(--nct-control-padding, 0.5rem)',
+                fontSize: 'var(--nct-control-font-size, 11px)',
+                borderRadius: 'calc(var(--nct-control-radius, 8px) - 2px)',
+                background: active ? 'var(--nct-accent-bg, var(--accent, #7c5cff))' : 'transparent',
+                color: active
+                  ? 'var(--nct-accent-text, #fff)'
+                  : 'var(--nct-dim-text, var(--text-dim, #7a7680))',
+              }}
             >
               {opt.label}
             </button>

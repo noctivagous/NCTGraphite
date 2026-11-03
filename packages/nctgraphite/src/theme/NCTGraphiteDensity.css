@@ -4,7 +4,10 @@
  * spacing with `data-nct-density="comfortable"`. Components resolve these
  * tokens with built-in fallbacks, so apps that never import this sheet keep
  * their current appearance. Importing it never imposes colors or fonts: only
- * spacing and component tokens live here.
+ * spacing, sizing, and surface tokens live here. Surface/accent tokens mirror
+ * the lab theme vocabulary (`--panel`, `--border`, `--text`, `--accent`)
+ * when a host theme provides them, and otherwise fall back to the NCTGraphite
+ * default appearance.
  */
 :root,
 [data-nct-density='compact'] {
@@ -12,6 +15,11 @@
   --nct-content-padding: 24px;
   --nct-panel-padding: 0.625rem;
   --nct-panel-radius: 8px;
+  --nct-control-font-size: 11px;
+  --nct-control-padding: 0.5rem;
+  --nct-control-gap: 6px;
+  --nct-control-radius: 8px;
+  --nct-control-height: 28px;
 }
 
 [data-nct-density='comfortable'] {
@@ -19,4 +27,9 @@
   --nct-content-padding: 36px;
   --nct-panel-padding: 1rem;
   --nct-panel-radius: 10px;
+  --nct-control-font-size: 13px;
+  --nct-control-padding: 0.75rem;
+  --nct-control-gap: 10px;
+  --nct-control-radius: 10px;
+  --nct-control-height: 36px;
 }

@@ -7,7 +7,42 @@ import { NCTGraphiteColumns } from '../components/NCTGraphiteColumns.js';
 import { NCTGraphiteScene, NCTGraphiteSceneItem } from '../components/NCTGraphiteScene.js';
 import { NCTGraphiteLayoutItem } from '../components/NCTGraphiteLayoutItem.js';
 import { NCTGraphiteButton } from '../components/NCTGraphiteButton.js';
+import { NCTGraphiteField } from '../components/NCTGraphiteField.js';
+import { NCTGraphiteTextArea } from '../components/NCTGraphiteTextArea.js';
+import { NCTGraphiteCheckbox } from '../components/NCTGraphiteCheckbox.js';
+import { NCTGraphiteTabs, type NCTGraphiteTabOption } from '../components/NCTGraphiteTabs.js';
+import { NCTGraphiteList, type NCTGraphiteListOption } from '../components/NCTGraphiteList.js';
+import { NCTGraphiteImageWell } from '../components/NCTGraphiteImageWell.js';
+import { NCTGraphiteSeparator } from '../components/NCTGraphiteSeparator.js';
+import { NCTGraphiteProgress } from '../components/NCTGraphiteProgress.js';
+import { NCTGraphiteKnob } from '../components/NCTGraphiteKnob.js';
+import { NCTGraphiteFader } from '../components/NCTGraphiteFader.js';
+import { NCTGraphiteDualRange } from '../components/NCTGraphiteDualRange.js';
+import { NCTGraphiteMeter } from '../components/NCTGraphiteMeter.js';
+import { NCTGraphiteValueDisplay } from '../components/NCTGraphiteValueDisplay.js';
 import type { LayoutNode, SavedLayoutModule } from './NCTGraphiteLayoutDocument.js';
+
+/** Parse a document `options` prop ("One, Two, Three") into labeled options.
+ * Returns null when the prop is absent so callers can use their own default.
+ */
+export function parseNCTOptionList(raw: unknown): { value: string; label: string }[] | null {
+  if (typeof raw !== 'string' || raw.trim() === '') return null;
+  const items = raw.split(',').map((s) => s.trim()).filter((s) => s !== '');
+  if (items.length === 0) return null;
+  return items.map((item) => {
+    const sep = item.indexOf(':');
+    if (sep < 0) return { value: item, label: item };
+    return { value: item.slice(0, sep).trim() || item, label: item.slice(sep + 1).trim() || item };
+  });
+}
+
+const DEFAULT_OPTIONS: { value: string; label: string }[] = [
+  { value: 'one', label: 'One' },
+  { value: 'two', label: 'Two' },
+  { value: 'three', label: 'Three' },
+];
+
+const noop = (): void => {};
 
 /** React renderer for the shared layout-tree document. */
 export function NCTGraphiteLayoutView({
@@ -51,6 +86,48 @@ export function NCTGraphiteLayoutView({
       return <span className="preview-text">{node.label}</span>;
     case 'button':
       return <NCTGraphiteButton label={node.label} {...node.props} />;
+    case 'field':
+      return <NCTGraphiteField {...node.props} label={node.label} onChange={noop} />;
+    case 'textArea':
+      return <NCTGraphiteTextArea {...node.props} label={node.label} onChange={noop} />;
+    case 'checkbox':
+      return <NCTGraphiteCheckbox {...node.props} label={node.label} onChange={noop} />;
+    case 'tabs': {
+      const options: NCTGraphiteTabOption[] = parseNCTOptionList(node.props.options) ?? DEFAULT_OPTIONS;
+      return <NCTGraphiteTabs {...node.props} options={options} onChange={noop} />;
+    }
+    case 'list': {
+      const options: NCTGraphiteListOption[] = parseNCTOptionList(node.props.options) ?? DEFAULT_OPTIONS;
+      return <NCTGraphiteList {...node.props} options={options} onChange={noop} />;
+    }
+    case 'imageWell':
+      return <NCTGraphiteImageWell {...node.props} label={node.label} onBrowse={noop} />;
+    case 'separator':
+      return <NCTGraphiteSeparator {...node.props} />;
+    case 'progress': {
+      const { value, max, ...rest } = node.props;
+      return <NCTGraphiteProgress {...rest} value={Number(value ?? 0)} max={Number(max ?? 100)} />;
+    }
+    case 'knob': {
+      const { value, min, max, ...rest } = node.props;
+      return <NCTGraphiteKnob {...rest} label={node.label} value={Number(value ?? 50)} min={Number(min ?? 0)} max={Number(max ?? 100)} onChange={noop} />;
+    }
+    case 'fader': {
+      const { value, min, max, ...rest } = node.props;
+      return <NCTGraphiteFader {...rest} label={node.label} value={Number(value ?? 50)} min={Number(min ?? 0)} max={Number(max ?? 100)} onChange={noop} />;
+    }
+    case 'dualRange': {
+      const { min, max, ...rest } = node.props;
+      return <NCTGraphiteDualRange {...rest} label={node.label} min={Number(min ?? 0)} max={Number(max ?? 100)} onChange={noop} />;
+    }
+    case 'meter': {
+      const { value, min, max, ...rest } = node.props;
+      return <NCTGraphiteMeter {...rest} label={node.label} value={Number(value ?? 0)} min={Number(min ?? 0)} max={Number(max ?? 100)} />;
+    }
+    case 'valueDisplay': {
+      const { value, ...rest } = node.props;
+      return <NCTGraphiteValueDisplay {...rest} label={node.label} value={(value as string | number) ?? ''} />;
+    }
     case 'module': {
       const def = modules.find((m) => m.id === node.moduleId);
       if (!def || seen.has(def.id)) return <span className="preview-text">{node.label}</span>;

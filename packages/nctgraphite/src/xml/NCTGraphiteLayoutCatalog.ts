@@ -11,6 +11,19 @@ import { NCTGraphiteColumnsMeta } from '../components/NCTGraphiteColumns.js';
 import { NCTGraphiteSceneMeta, NCTGraphiteSceneItemMeta } from '../components/NCTGraphiteScene.js';
 import { NCTGraphiteLayoutItemMeta } from '../components/NCTGraphiteLayoutItem.js';
 import { NCTGraphiteButtonMeta } from '../components/NCTGraphiteButton.js';
+import { NCTGraphiteFieldMeta } from '../components/NCTGraphiteField.js';
+import { NCTGraphiteTextAreaMeta } from '../components/NCTGraphiteTextArea.js';
+import { NCTGraphiteCheckboxMeta } from '../components/NCTGraphiteCheckbox.js';
+import { NCTGraphiteTabsMeta } from '../components/NCTGraphiteTabs.js';
+import { NCTGraphiteListMeta } from '../components/NCTGraphiteList.js';
+import { NCTGraphiteImageWellMeta } from '../components/NCTGraphiteImageWell.js';
+import { NCTGraphiteSeparatorMeta } from '../components/NCTGraphiteSeparator.js';
+import { NCTGraphiteProgressMeta } from '../components/NCTGraphiteProgress.js';
+import { NCTGraphiteKnobMeta } from '../components/NCTGraphiteKnob.js';
+import { NCTGraphiteFaderMeta } from '../components/NCTGraphiteFader.js';
+import { NCTGraphiteDualRangeMeta } from '../components/NCTGraphiteDualRange.js';
+import { NCTGraphiteMeterMeta } from '../components/NCTGraphiteMeter.js';
+import { NCTGraphiteValueDisplayMeta } from '../components/NCTGraphiteValueDisplay.js';
 import type { LayoutKind } from './NCTGraphiteLayoutDocument.js';
 
 export interface LayoutCatalogEntry {
@@ -32,6 +45,19 @@ const META_BY_KIND: { kind: LayoutKind; meta: NCTGraphiteComponentMeta }[] = [
   { kind: 'sceneItem', meta: NCTGraphiteSceneItemMeta },
   { kind: 'layoutItem', meta: NCTGraphiteLayoutItemMeta },
   { kind: 'button', meta: NCTGraphiteButtonMeta },
+  { kind: 'field', meta: NCTGraphiteFieldMeta },
+  { kind: 'textArea', meta: NCTGraphiteTextAreaMeta },
+  { kind: 'checkbox', meta: NCTGraphiteCheckboxMeta },
+  { kind: 'tabs', meta: NCTGraphiteTabsMeta },
+  { kind: 'list', meta: NCTGraphiteListMeta },
+  { kind: 'imageWell', meta: NCTGraphiteImageWellMeta },
+  { kind: 'separator', meta: NCTGraphiteSeparatorMeta },
+  { kind: 'progress', meta: NCTGraphiteProgressMeta },
+  { kind: 'knob', meta: NCTGraphiteKnobMeta },
+  { kind: 'fader', meta: NCTGraphiteFaderMeta },
+  { kind: 'dualRange', meta: NCTGraphiteDualRangeMeta },
+  { kind: 'meter', meta: NCTGraphiteMeterMeta },
+  { kind: 'valueDisplay', meta: NCTGraphiteValueDisplayMeta },
   {
     kind: 'text',
     meta: {

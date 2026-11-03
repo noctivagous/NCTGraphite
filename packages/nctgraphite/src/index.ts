@@ -40,6 +40,45 @@ export type { NCTGraphiteComponentMeta, NCTGraphitePropMeta } from './components
 export { NCTGraphiteSlider, NCTGraphiteSliderMeta } from './components/NCTGraphiteSlider.js';
 export type { NCTGraphiteSliderProps } from './components/NCTGraphiteSlider.js';
 
+export { NCTGraphiteField, NCTGraphiteFieldMeta } from './components/NCTGraphiteField.js';
+export type { NCTGraphiteFieldProps } from './components/NCTGraphiteField.js';
+
+export { NCTGraphiteTextArea, NCTGraphiteTextAreaMeta } from './components/NCTGraphiteTextArea.js';
+export type { NCTGraphiteTextAreaProps } from './components/NCTGraphiteTextArea.js';
+
+export { NCTGraphiteCheckbox, NCTGraphiteCheckboxMeta } from './components/NCTGraphiteCheckbox.js';
+export type { NCTGraphiteCheckboxProps } from './components/NCTGraphiteCheckbox.js';
+
+export { NCTGraphiteTabs, NCTGraphiteTabsMeta } from './components/NCTGraphiteTabs.js';
+export type { NCTGraphiteTabsProps, NCTGraphiteTabOption } from './components/NCTGraphiteTabs.js';
+
+export { NCTGraphiteList, NCTGraphiteListMeta } from './components/NCTGraphiteList.js';
+export type { NCTGraphiteListProps, NCTGraphiteListOption } from './components/NCTGraphiteList.js';
+
+export { NCTGraphiteImageWell, NCTGraphiteImageWellMeta } from './components/NCTGraphiteImageWell.js';
+export type { NCTGraphiteImageWellProps } from './components/NCTGraphiteImageWell.js';
+
+export { NCTGraphiteSeparator, NCTGraphiteSeparatorMeta } from './components/NCTGraphiteSeparator.js';
+export type { NCTGraphiteSeparatorProps } from './components/NCTGraphiteSeparator.js';
+
+export { NCTGraphiteProgress, NCTGraphiteProgressMeta } from './components/NCTGraphiteProgress.js';
+export type { NCTGraphiteProgressProps } from './components/NCTGraphiteProgress.js';
+
+export { NCTGraphiteKnob, NCTGraphiteKnobMeta } from './components/NCTGraphiteKnob.js';
+export type { NCTGraphiteKnobProps } from './components/NCTGraphiteKnob.js';
+
+export { NCTGraphiteFader, NCTGraphiteFaderMeta } from './components/NCTGraphiteFader.js';
+export type { NCTGraphiteFaderProps } from './components/NCTGraphiteFader.js';
+
+export { NCTGraphiteDualRange, NCTGraphiteDualRangeMeta } from './components/NCTGraphiteDualRange.js';
+export type { NCTGraphiteDualRangeProps } from './components/NCTGraphiteDualRange.js';
+
+export { NCTGraphiteMeter, NCTGraphiteMeterMeta } from './components/NCTGraphiteMeter.js';
+export type { NCTGraphiteMeterProps } from './components/NCTGraphiteMeter.js';
+
+export { NCTGraphiteValueDisplay, NCTGraphiteValueDisplayMeta } from './components/NCTGraphiteValueDisplay.js';
+export type { NCTGraphiteValueDisplayProps } from './components/NCTGraphiteValueDisplay.js';
+
 export { NCTGraphitePanel, NCTGraphitePanelMeta } from './components/NCTGraphitePanel.js';
 export type { NCTGraphitePanelProps } from './components/NCTGraphitePanel.js';
 
@@ -185,4 +224,4 @@ export {
 } from './xml/NCTGraphiteLayoutXml.js';
 export { buildLayoutCatalog, editablePropsFor } from './xml/NCTGraphiteLayoutCatalog.js';
 export type { LayoutCatalogEntry } from './xml/NCTGraphiteLayoutCatalog.js';
-export { NCTGraphiteLayoutView } from './xml/NCTGraphiteLayoutReact.js';
+export { NCTGraphiteLayoutView, parseNCTOptionList } from './xml/NCTGraphiteLayoutReact.js';

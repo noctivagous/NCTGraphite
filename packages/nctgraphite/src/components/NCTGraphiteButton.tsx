@@ -29,10 +29,22 @@ export interface NCTGraphiteButtonProps {
   type?: 'button' | 'submit' | 'reset';
 }
 
-const variantClass: Record<string, string> = {
-  default: 'bg-[#1a1a24] hover:bg-[#222230] border border-[#23232f] text-[#f5f1e8]',
-  primary: 'bg-[#7c5cff] hover:bg-[#8d71ff] border border-[#7c5cff] text-white',
-  ghost: 'bg-transparent hover:bg-[#1a1a24] border border-transparent text-[#7a7680] hover:text-white',
+const variantStyle: Record<NCTGraphiteButtonProps['variant'] & string, CSSProperties> = {
+  default: {
+    background: 'var(--nct-btn-bg, var(--panel-2, #1a1a24))',
+    borderColor: 'var(--nct-btn-border, var(--border, #23232f))',
+    color: 'var(--nct-btn-text, var(--text, #f5f1e8))',
+  },
+  primary: {
+    background: 'var(--nct-accent-bg, var(--accent, #7c5cff))',
+    borderColor: 'var(--nct-accent-bg, var(--accent, #7c5cff))',
+    color: 'var(--nct-accent-text, #fff)',
+  },
+  ghost: {
+    background: 'transparent',
+    borderColor: 'transparent',
+    color: 'var(--nct-btn-dim-text, var(--text-dim, #7a7680))',
+  },
 };
 
 /** Lab action button: label with an optional small leading SVG icon. */
@@ -53,8 +65,16 @@ export function NCTGraphiteButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`inline-flex items-center justify-center gap-[6px] py-2 px-3 text-[11px] rounded font-bold disabled:opacity-50 ${variantClass[variant]} ${className}`}
-      style={style}
+      className={`nctgraphite-button inline-flex items-center justify-center border font-bold disabled:opacity-50 ${className}`}
+      style={{
+        gap: 'var(--nct-control-gap, 6px)',
+        padding: 'var(--nct-control-padding, 0.5rem) 12px',
+        minHeight: 'var(--nct-control-height, 28px)',
+        fontSize: 'var(--nct-control-font-size, 11px)',
+        borderRadius: 'var(--nct-control-radius, 8px)',
+        ...variantStyle[variant],
+        ...style,
+      }}
     >
       {icon ? (
         <span className="inline-flex flex-none items-center [&>svg]:block" aria-hidden="true">

@@ -30,6 +30,19 @@ const KIND_TO_TAG: Record<LayoutKind, string> = {
   text: 'NCTGraphiteText',
   button: 'NCTGraphiteButton',
   module: 'NCTGraphiteModuleInstance',
+  field: 'NCTGraphiteField',
+  textArea: 'NCTGraphiteTextArea',
+  checkbox: 'NCTGraphiteCheckbox',
+  tabs: 'NCTGraphiteTabs',
+  list: 'NCTGraphiteList',
+  imageWell: 'NCTGraphiteImageWell',
+  separator: 'NCTGraphiteSeparator',
+  progress: 'NCTGraphiteProgress',
+  knob: 'NCTGraphiteKnob',
+  fader: 'NCTGraphiteFader',
+  dualRange: 'NCTGraphiteDualRange',
+  meter: 'NCTGraphiteMeter',
+  valueDisplay: 'NCTGraphiteValueDisplay',
 };
 
 const TAG_TO_KIND: Record<string, LayoutKind> = {
@@ -44,6 +57,19 @@ const TAG_TO_KIND: Record<string, LayoutKind> = {
   NCTGraphiteText: 'text',
   NCTGraphiteButton: 'button',
   NCTGraphiteModuleInstance: 'module',
+  NCTGraphiteField: 'field',
+  NCTGraphiteTextArea: 'textArea',
+  NCTGraphiteCheckbox: 'checkbox',
+  NCTGraphiteTabs: 'tabs',
+  NCTGraphiteList: 'list',
+  NCTGraphiteImageWell: 'imageWell',
+  NCTGraphiteSeparator: 'separator',
+  NCTGraphiteProgress: 'progress',
+  NCTGraphiteKnob: 'knob',
+  NCTGraphiteFader: 'fader',
+  NCTGraphiteDualRange: 'dualRange',
+  NCTGraphiteMeter: 'meter',
+  NCTGraphiteValueDisplay: 'valueDisplay',
 };
 
 export function layoutTagFor(node: LayoutNode): string {

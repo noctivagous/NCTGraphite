@@ -36,10 +36,10 @@ See [PROJECT-FORMAT.md](PROJECT-FORMAT.md) for the proposed project model.
 
 ## Controls
 
-- [ ] Make shared controls themeable and support compact and comfortable densities.
-- [ ] Add the missing Proshade controls: fields, text areas, checkboxes, tabs, lists, image wells, separators, and progress indicators.
-- [ ] Add accessible audio controls, including rotary knobs, faders, dual ranges, meters, and displays.
-- [ ] Validate controls in Studio and other real NCTGraphite applications.
+- [x] Make shared controls themeable and support compact and comfortable densities.
+- [x] Add the missing Proshade controls: fields, text areas, checkboxes, tabs, lists, image wells, separators, and progress indicators.
+- [x] Add accessible audio controls, including rotary knobs, faders, dual ranges, meters, and displays.
+- [x] Validate controls in Studio and other real NCTGraphite applications.
 
 ## App building
 

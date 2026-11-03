@@ -10,7 +10,10 @@ export const NCTGRAPHITE_LAYOUT_FILE_EXTENSION = 'nctgraphite.xml';
 export type LayoutKind =
   | 'stack' | 'row' | 'grid' | 'overlay' | 'accordion'
   | 'columns' | 'scene' | 'sceneItem' | 'layoutItem'
-  | 'text' | 'button' | 'module';
+  | 'text' | 'button' | 'module'
+  | 'field' | 'textArea' | 'checkbox' | 'tabs' | 'list'
+  | 'imageWell' | 'separator' | 'progress'
+  | 'knob' | 'fader' | 'dualRange' | 'meter' | 'valueDisplay';
 
 export type LayoutPropValue = string | number | boolean;
 
@@ -55,6 +58,19 @@ export const layoutKindLabels: Record<LayoutKind, string> = {
   text: 'Text',
   button: 'Button',
   module: 'Module',
+  field: 'Text field',
+  textArea: 'Text area',
+  checkbox: 'Checkbox',
+  tabs: 'Tabs',
+  list: 'List',
+  imageWell: 'Image well',
+  separator: 'Separator',
+  progress: 'Progress',
+  knob: 'Knob',
+  fader: 'Fader',
+  dualRange: 'Dual range',
+  meter: 'Meter',
+  valueDisplay: 'Value display',
 };
 
 function freshId(): string {
