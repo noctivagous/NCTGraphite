@@ -70,7 +70,7 @@ intended behavior rather than assuming every reference control is functional.
 - [x] Select and hover objects directly on the canvas with clear bounds and handles, including nested containers, without changing their layout or blocking control interactions in preview mode.
 - [x] Move and resize scene items with pointer handles, parent-relative coordinates, zoom-corrected pointer movement, minimum dimensions, and one undo step per gesture.
 - [x] Support canvas-based nesting and reparenting with correct coordinates, prevent invalid parent/child relationships and cycles, and retain tree-based alternatives for stack and grid layouts.
-- [x] Add canvas zoom controls, percentage readout, fit/reset, and scrolling or panning; keep selection and pointer operations accurate at each zoom.
+- [x] Add canvas zoom controls, percentage readout, fit/reset, and scrolling or panning; keep selection and pointer operations accurate at each zoom. Zoom scales the app window with CSS transforms.
 - [x] Add independent grid visibility and snapping controls, configurable spacing, visible guides, and predictable snapping during placement, movement, and resize.
 - [x] Add keyboard delete and duplicate shortcuts, focus-safe handling for text inputs, and accessible alternatives for moving and resizing.
 - [x] Drag the app window around a large pannable workspace by its header (design mode); pan by dragging the background; workspace position persists across reload.
