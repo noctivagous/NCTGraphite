@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { appearancePropMeta, appearanceStyle, type NCTGraphiteAppearanceProps } from './NCTGraphiteMeta.js';
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
 import { NCTGraphiteHint } from './NCTGraphiteHint.js';
 
@@ -7,6 +8,7 @@ export const NCTGraphiteToggleMeta: NCTGraphiteComponentMeta = {
   category: 'widgets',
   description: 'Checkbox card row for lab boolean options',
   props: {
+    ...appearancePropMeta,
     label: { type: 'string', required: true, description: 'Option label' },
     checked: { type: 'boolean', required: true, description: 'Current state' },
     onChange: { type: 'function', required: true, description: '(v: boolean) => void' },
@@ -17,7 +19,7 @@ export const NCTGraphiteToggleMeta: NCTGraphiteComponentMeta = {
   dependencies: [],
 };
 
-export interface NCTGraphiteToggleProps {
+export interface NCTGraphiteToggleProps extends NCTGraphiteAppearanceProps {
   label: string;
   checked: boolean;
   onChange: (v: boolean) => void;
@@ -26,7 +28,7 @@ export interface NCTGraphiteToggleProps {
 }
 
 /** Boolean option row (lab idiom): checkbox card by default, sliding pill with controlStyle="switch". */
-export function NCTGraphiteToggle({ label, checked, onChange, controlStyle = 'checkbox', hint }: NCTGraphiteToggleProps) {
+export function NCTGraphiteToggle({ label, checked, onChange, controlStyle = 'checkbox', hint, opacity, cornerRadius }: NCTGraphiteToggleProps) {
   const labelRow = (
     <span className="flex items-center gap-1 min-w-0">
       <span className="text-[11px] truncate">{label}</span>
@@ -38,6 +40,7 @@ export function NCTGraphiteToggle({ label, checked, onChange, controlStyle = 'ch
     borderColor: 'var(--nct-border, var(--border, #23232f))',
     borderRadius: 'var(--nct-control-radius, 8px)',
     padding: 'var(--nct-control-padding, 0.5rem)',
+    ...appearanceStyle({ opacity, cornerRadius }),
   };
   if (controlStyle === 'switch') {
     return (

@@ -1,4 +1,5 @@
 import type { CSSProperties, MouseEventHandler, ReactNode } from 'react';
+import { appearancePropMeta, appearanceStyle, type NCTGraphiteAppearanceProps } from './NCTGraphiteMeta.js';
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
 import { NCTGraphiteParamLabel } from './NCTGraphiteHint.js';
 
@@ -7,6 +8,7 @@ export const NCTGraphiteImageWellMeta: NCTGraphiteComponentMeta = {
   category: 'widgets',
   description: 'Drop-target well that previews an image or shows an empty placeholder',
   props: {
+    ...appearancePropMeta,
     label: { type: 'string', required: false, description: 'Optional uppercase label above the well' },
     src: { type: 'string', required: false, description: 'Image URL to preview; empty shows the placeholder' },
     alt: { type: 'string', required: false, description: 'Alt text for the preview image' },
@@ -19,7 +21,7 @@ export const NCTGraphiteImageWellMeta: NCTGraphiteComponentMeta = {
   dependencies: [],
 };
 
-export interface NCTGraphiteImageWellProps {
+export interface NCTGraphiteImageWellProps extends NCTGraphiteAppearanceProps {
   label?: string;
   src?: string;
   alt?: string;
@@ -34,12 +36,13 @@ export interface NCTGraphiteImageWellProps {
 /** Image drop-target well (Proshade image-well idiom): preview or placeholder. */
 export function NCTGraphiteImageWell({
   label, src, alt = '', emptyText = 'Drop image', disabled = false, onBrowse, hint, children, style,
+  opacity, cornerRadius,
 }: NCTGraphiteImageWellProps) {
   const onClick: MouseEventHandler<HTMLButtonElement> = () => {
     if (!disabled) onBrowse?.();
   };
   return (
-    <div className="nctgraphite-image-well" style={style}>
+    <div className="nctgraphite-image-well" style={{ ...appearanceStyle({ opacity, cornerRadius }), ...style }}>
       {label ? <NCTGraphiteParamLabel label={label} hint={hint} /> : null}
       <button
         type="button"

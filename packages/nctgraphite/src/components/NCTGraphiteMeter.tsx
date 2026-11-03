@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { appearancePropMeta, appearanceStyle, type NCTGraphiteAppearanceProps } from './NCTGraphiteMeta.js';
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
 import { NCTGraphiteParamLabel } from './NCTGraphiteHint.js';
 
@@ -7,6 +8,7 @@ export const NCTGraphiteMeterMeta: NCTGraphiteComponentMeta = {
   category: 'widgets',
   description: 'Read-only level meter for signal, gain, and progress levels',
   props: {
+    ...appearancePropMeta,
     label: { type: 'string', required: false, description: 'Optional uppercase label above the meter' },
     value: { type: 'number', required: true, description: 'Current level' },
     min: { type: 'number', required: false, description: 'Scale minimum (default 0)' },
@@ -19,7 +21,7 @@ export const NCTGraphiteMeterMeta: NCTGraphiteComponentMeta = {
   dependencies: [],
 };
 
-export interface NCTGraphiteMeterProps {
+export interface NCTGraphiteMeterProps extends NCTGraphiteAppearanceProps {
   label?: string;
   value: number;
   min?: number;
@@ -35,13 +37,14 @@ export interface NCTGraphiteMeterProps {
 export function NCTGraphiteMeter({
   label, value, min = 0, max = 100, peak, orientation = 'horizontal',
   width, height = 96, style,
+  opacity, cornerRadius,
 }: NCTGraphiteMeterProps) {
   const span = max - min || 1;
   const ratio = Math.max(0, Math.min(1, (value - min) / span));
   const peakRatio = peak === undefined ? null : Math.max(0, Math.min(1, (peak - min) / span));
   const vertical = orientation === 'vertical';
   return (
-    <div className="nctgraphite-meter" style={{ display: 'inline-flex', flexDirection: 'column', gap: 4, ...style }}>
+    <div className="nctgraphite-meter" style={{ display: 'inline-flex', flexDirection: 'column', gap: 4, ...style, ...appearanceStyle({ opacity, cornerRadius }) }}>
       {label ? <NCTGraphiteParamLabel label={label} trailing={String(Math.round(ratio * 100))} /> : null}
       <div
         role="meter"

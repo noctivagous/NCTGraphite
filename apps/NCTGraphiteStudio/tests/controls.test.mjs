@@ -150,3 +150,21 @@ test('layout view renders document control nodes', () => {
   assert.match(view(node('separator', { orientation: 'vertical' })), /aria-orientation="vertical"/);
   assert.match(view(node('textArea')), /<textarea/);
 });
+
+test('widgets support shared appearance props with theme-aware token defaults', () => {
+  const button = render(lib.NCTGraphiteButton, { label: 'Go', opacity: 0.5, cornerRadius: 12 });
+  assert.match(button, /opacity:\s*0\.5/);
+  assert.match(button, /border-radius:\s*12px/);
+  const plain = render(lib.NCTGraphiteButton, { label: 'Go' });
+  assert.doesNotMatch(plain, /opacity:/);
+  const panel = render(lib.NCTGraphitePanel, { title: 'P', cornerRadius: '50%' }, 'x');
+  assert.match(panel, /border-radius:\s*50%/);
+  const win = render(lib.NCTGraphiteWindow, { title: 'W', opacity: 0.75 }, 'x');
+  assert.match(win, /opacity:\s*0\.75/);
+  for (const kind of ['button', 'panel', 'toolbar', 'window', 'slider', 'toggle', 'segmented', 'meter', 'progress', 'valueDisplay', 'checkbox', 'field', 'textArea', 'tabs', 'list', 'imageWell']) {
+    assert.ok(lib.editablePropsFor(kind).includes('opacity'), `${kind} exposes opacity`);
+    assert.ok(lib.editablePropsFor(kind).includes('cornerRadius'), `${kind} exposes cornerRadius`);
+  }
+  const doc = { name: 'A', density: 'compact', theme: 'light', modules: [], root: { id: 'r', kind: 'stack', label: 'R', props: {}, children: [{ id: 'b', kind: 'button', label: 'Go', props: { opacity: 0.5, cornerRadius: 12 }, children: [] }] } };
+  assert.deepEqual(lib.parseLayoutDocument(lib.serializeLayoutDocument(doc)), doc);
+});

@@ -1,4 +1,5 @@
 import type { CSSProperties, MouseEventHandler, ReactNode } from 'react';
+import { appearancePropMeta, appearanceStyle, type NCTGraphiteAppearanceProps } from './NCTGraphiteMeta.js';
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
 
 export const NCTGraphiteButtonMeta: NCTGraphiteComponentMeta = {
@@ -6,6 +7,7 @@ export const NCTGraphiteButtonMeta: NCTGraphiteComponentMeta = {
   category: 'widgets',
   description: 'Lab action button with optional small leading SVG icon',
   props: {
+    ...appearancePropMeta,
     label: { type: 'string', required: true, description: 'Button text label' },
     icon: { type: 'node', required: false, description: 'Optional small leading SVG icon (14px, stroke="currentColor")' },
     onClick: { type: 'function', required: false, description: '() => void click handler' },
@@ -17,7 +19,7 @@ export const NCTGraphiteButtonMeta: NCTGraphiteComponentMeta = {
   dependencies: [],
 };
 
-export interface NCTGraphiteButtonProps {
+export interface NCTGraphiteButtonProps extends NCTGraphiteAppearanceProps {
   label: string;
   icon?: ReactNode;
   onClick?: MouseEventHandler<HTMLButtonElement>;
@@ -58,6 +60,8 @@ export function NCTGraphiteButton({
   className = '',
   style,
   type = 'button',
+  opacity,
+  cornerRadius,
 }: NCTGraphiteButtonProps) {
   return (
     <button
@@ -74,6 +78,7 @@ export function NCTGraphiteButton({
         borderRadius: 'var(--nct-control-radius, 8px)',
         ...variantStyle[variant],
         ...style,
+        ...appearanceStyle({ opacity, cornerRadius }),
       }}
     >
       {icon ? (

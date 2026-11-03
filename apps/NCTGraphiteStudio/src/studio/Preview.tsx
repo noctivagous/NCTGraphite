@@ -166,25 +166,25 @@ export function Preview({ node, modules, selected, select, logic, values, onValu
     }
     case 'imageWell': content = <NCTGraphiteImageWell {...node.props} label={node.label} onBrowse={() => {}} />; break;
     case 'separator': content = <NCTGraphiteSeparator {...node.props} />; break;
-    case 'progress': content = <NCTGraphiteProgress value={Number(boundValue ?? node.props.value ?? 0)} max={Number(node.props.max ?? 100)} />; break;
-    case 'knob': content = <NCTGraphiteKnob label={node.label} value={Number(boundValue ?? node.props.value ?? 50)} min={Number(node.props.min ?? 0)} max={Number(node.props.max ?? 100)} onChange={changeBoundValue} />; break;
-    case 'fader': content = <NCTGraphiteFader label={node.label} value={Number(boundValue ?? node.props.value ?? 50)} min={Number(node.props.min ?? 0)} max={Number(node.props.max ?? 100)} onChange={changeBoundValue} />; break;
-    case 'dualRange': content = <NCTGraphiteDualRange label={node.label} min={Number(node.props.min ?? 0)} max={Number(node.props.max ?? 100)} onChange={() => {}} />; break;
-    case 'meter': content = <NCTGraphiteMeter label={node.label} value={Number(boundValue ?? node.props.value ?? 0)} min={Number(node.props.min ?? 0)} max={Number(node.props.max ?? 100)} />; break;
+    case 'progress': content = <NCTGraphiteProgress {...node.props} value={Number(boundValue ?? node.props.value ?? 0)} max={Number(node.props.max ?? 100)} />; break;
+    case 'knob': content = <NCTGraphiteKnob {...node.props} label={node.label} value={Number(boundValue ?? node.props.value ?? 50)} min={Number(node.props.min ?? 0)} max={Number(node.props.max ?? 100)} onChange={changeBoundValue} />; break;
+    case 'fader': content = <NCTGraphiteFader {...node.props} label={node.label} value={Number(boundValue ?? node.props.value ?? 50)} min={Number(node.props.min ?? 0)} max={Number(node.props.max ?? 100)} onChange={changeBoundValue} />; break;
+    case 'dualRange': content = <NCTGraphiteDualRange {...node.props} label={node.label} min={Number(node.props.min ?? 0)} max={Number(node.props.max ?? 100)} onChange={() => {}} />; break;
+    case 'meter': content = <NCTGraphiteMeter {...node.props} label={node.label} value={Number(boundValue ?? node.props.value ?? 0)} min={Number(node.props.min ?? 0)} max={Number(node.props.max ?? 100)} />; break;
     case 'valueDisplay': {
       const bound = logic && values ? logic.bindings.find(b => b.nodeId === node.id && b.prop === 'value' && b.stateKey) : undefined;
       const boundValue = bound?.stateKey && values ? values[bound.stateKey] : undefined;
-      content = <NCTGraphiteValueDisplay label={node.label} value={(boundValue as string | number) ?? (node.props.value as string | number) ?? ''} />; break;
+      content = <NCTGraphiteValueDisplay {...node.props} label={node.label} value={(boundValue as string | number) ?? (node.props.value as string | number) ?? ''} />; break;
     }
-    case 'slider': content = <NCTGraphiteSlider label={node.label} value={Number(typeof boundValue === 'number' ? boundValue : node.props.value ?? 50)} min={Number(node.props.min ?? 0)} max={Number(node.props.max ?? 100)} step={Number(node.props.step ?? 1)} onChange={changeBoundValue} />; break;
+    case 'slider': content = <NCTGraphiteSlider {...node.props} label={node.label} value={Number(typeof boundValue === 'number' ? boundValue : node.props.value ?? 50)} min={Number(node.props.min ?? 0)} max={Number(node.props.max ?? 100)} step={Number(node.props.step ?? 1)} onChange={changeBoundValue} />; break;
     case 'toggle': {
       const checkedBinding = logic?.bindings.find(b => b.nodeId === node.id && b.prop === 'checked' && b.stateKey);
       const checkedValue = checkedBinding?.stateKey && values ? values[checkedBinding.stateKey] : undefined;
-      content = <NCTGraphiteToggle label={node.label} checked={typeof checkedValue === 'boolean' ? checkedValue : Boolean(node.props.checked ?? false)} onChange={(v) => { if (checkedBinding?.stateKey) onValue?.(checkedBinding.stateKey, v); else changeBoundValue(v); }} />; break;
+      content = <NCTGraphiteToggle {...node.props} label={node.label} checked={typeof checkedValue === 'boolean' ? checkedValue : Boolean(node.props.checked ?? false)} onChange={(v) => { if (checkedBinding?.stateKey) onValue?.(checkedBinding.stateKey, v); else changeBoundValue(v); }} />; break;
     }
     case 'segmented': {
       const options = parseNCTOptionList(node.props.options) ?? [{ value: 'one', label: 'One' }];
-      content = <NCTGraphiteSegmented label={node.label} options={options} value={typeof boundValue === 'string' ? boundValue : String(node.props.value ?? options[0].value)} onChange={changeBoundValue} />; break;
+      content = <NCTGraphiteSegmented {...node.props} label={node.label} options={options} value={typeof boundValue === 'string' ? boundValue : String(node.props.value ?? options[0].value)} onChange={changeBoundValue} />; break;
     }
     case 'panel': content = <NCTGraphitePanel title={node.label} {...node.props}>{children}</NCTGraphitePanel>; break;
     case 'toolbar': content = <NCTGraphiteToolbar {...node.props}>{children}</NCTGraphiteToolbar>; break;

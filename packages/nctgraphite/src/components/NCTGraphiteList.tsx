@@ -1,5 +1,6 @@
 import type { CSSProperties, KeyboardEvent } from 'react';
 import { useState } from 'react';
+import { appearancePropMeta, appearanceStyle, type NCTGraphiteAppearanceProps } from './NCTGraphiteMeta.js';
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
 
 export const NCTGraphiteListMeta: NCTGraphiteComponentMeta = {
@@ -7,6 +8,7 @@ export const NCTGraphiteListMeta: NCTGraphiteComponentMeta = {
   category: 'widgets',
   description: 'Single-select listbox with arrow-key navigation for option lists',
   props: {
+    ...appearancePropMeta,
     options: { type: 'string', required: false, description: 'Comma-separated list options in documents, e.g. "Kick, Snare, Hat"' },
     value: { type: 'string', required: false, description: 'Controlled selected value' },
     defaultValue: { type: 'string', required: false, description: 'Uncontrolled initial value' },
@@ -22,7 +24,7 @@ export interface NCTGraphiteListOption {
   disabled?: boolean;
 }
 
-export interface NCTGraphiteListProps {
+export interface NCTGraphiteListProps extends NCTGraphiteAppearanceProps {
   options: NCTGraphiteListOption[];
   value?: string;
   defaultValue?: string;
@@ -35,6 +37,7 @@ export interface NCTGraphiteListProps {
 /** Single-select listbox with arrow-key navigation. Controlled or uncontrolled. */
 export function NCTGraphiteList({
   options, value, defaultValue, onChange, ariaLabel, visibleRows = 5, style,
+  opacity, cornerRadius,
 }: NCTGraphiteListProps) {
   const enabled = options.filter((o) => !o.disabled);
   const [inner, setInner] = useState(defaultValue ?? enabled[0]?.value);
@@ -74,6 +77,7 @@ export function NCTGraphiteList({
         color: 'var(--nct-control-text, var(--text, #f5f1e8))',
         outline: 'none',
         ...style,
+        ...appearanceStyle({ opacity, cornerRadius }),
       }}
     >
       {options.map((opt) => {

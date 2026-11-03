@@ -1,3 +1,4 @@
+import { appearancePropMeta, appearanceStyle, type NCTGraphiteAppearanceProps } from './NCTGraphiteMeta.js';
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
 import { NCTGraphiteParamLabel } from './NCTGraphiteHint.js';
 
@@ -6,6 +7,7 @@ export const NCTGraphiteSegmentedMeta: NCTGraphiteComponentMeta = {
   category: 'widgets',
   description: 'Single-select segmented row for lab mode and option pickers',
   props: {
+    ...appearancePropMeta,
     label: { type: 'string', required: false, description: 'Optional uppercase label above the row' },
     options: { type: 'array', required: true, description: '{value, label}[] choices' },
     value: { type: 'string', required: true, description: 'Selected value' },
@@ -21,7 +23,7 @@ export interface NCTGraphiteSegmentedOption {
   label: string;
 }
 
-export interface NCTGraphiteSegmentedProps {
+export interface NCTGraphiteSegmentedProps extends NCTGraphiteAppearanceProps {
   label?: string;
   options: NCTGraphiteSegmentedOption[];
   value: string;
@@ -30,7 +32,7 @@ export interface NCTGraphiteSegmentedProps {
 }
 
 /** Single-select segmented row for mode/option pickers (lab idiom). */
-export function NCTGraphiteSegmented({ label, options, value, onChange, hint }: NCTGraphiteSegmentedProps) {
+export function NCTGraphiteSegmented({ label, options, value, onChange, hint, opacity, cornerRadius }: NCTGraphiteSegmentedProps) {
   return (
     <div>
       {label ? <NCTGraphiteParamLabel label={label} hint={hint} /> : null}
@@ -41,6 +43,7 @@ export function NCTGraphiteSegmented({ label, options, value, onChange, hint }: 
           background: 'var(--nct-surface, var(--panel, #15151e))',
           borderColor: 'var(--nct-border, var(--border, #23232f))',
           borderRadius: 'var(--nct-control-radius, 8px)',
+          ...appearanceStyle({ opacity, cornerRadius }),
         }}
       >
         {options.map((opt) => {

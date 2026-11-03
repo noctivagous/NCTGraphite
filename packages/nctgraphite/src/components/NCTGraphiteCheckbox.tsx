@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useId, useState } from 'react';
+import { appearancePropMeta, appearanceStyle, type NCTGraphiteAppearanceProps } from './NCTGraphiteMeta.js';
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
 import { NCTGraphiteHint } from './NCTGraphiteHint.js';
 
@@ -8,6 +9,7 @@ export const NCTGraphiteCheckboxMeta: NCTGraphiteComponentMeta = {
   category: 'widgets',
   description: 'Plain checkbox with label for Proshade-style option rows',
   props: {
+    ...appearancePropMeta,
     label: { type: 'string', required: true, description: 'Checkbox label' },
     checked: { type: 'boolean', required: false, description: 'Controlled state' },
     defaultChecked: { type: 'boolean', required: false, description: 'Uncontrolled initial state' },
@@ -19,7 +21,7 @@ export const NCTGraphiteCheckboxMeta: NCTGraphiteComponentMeta = {
   dependencies: [],
 };
 
-export interface NCTGraphiteCheckboxProps {
+export interface NCTGraphiteCheckboxProps extends NCTGraphiteAppearanceProps {
   label: ReactNode;
   checked?: boolean;
   defaultChecked?: boolean;
@@ -33,6 +35,7 @@ export interface NCTGraphiteCheckboxProps {
 /** Plain labeled checkbox (Proshade checkbox idiom). Controlled or uncontrolled. */
 export function NCTGraphiteCheckbox({
   label, checked, defaultChecked = false, disabled = false, onChange, hint, id, style,
+  opacity, cornerRadius,
 }: NCTGraphiteCheckboxProps) {
   const autoId = useId();
   const boxId = id ?? `nct-checkbox-${autoId}`;
@@ -52,6 +55,7 @@ export function NCTGraphiteCheckbox({
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.5 : 1,
         ...style,
+        ...appearanceStyle({ opacity, cornerRadius }),
       }}
     >
       <input

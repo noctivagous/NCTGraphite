@@ -35,7 +35,8 @@ export type {
   NCTGraphiteGridKind, NCTGraphiteGridSpec, NCTGraphitePoint,
 } from './grid/NCTGraphiteGridGeometry.js';
 
-export type { NCTGraphiteComponentMeta, NCTGraphitePropMeta } from './components/NCTGraphiteMeta.js';
+export type { NCTGraphiteAppearanceProps, NCTGraphiteComponentMeta, NCTGraphitePropMeta } from './components/NCTGraphiteMeta.js';
+export { appearancePropMeta, appearanceStyle } from './components/NCTGraphiteMeta.js';
 
 export { NCTGraphiteSlider, NCTGraphiteSliderMeta } from './components/NCTGraphiteSlider.js';
 export type { NCTGraphiteSliderProps } from './components/NCTGraphiteSlider.js';

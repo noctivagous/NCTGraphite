@@ -1,3 +1,4 @@
+import { appearancePropMeta, appearanceStyle, type NCTGraphiteAppearanceProps } from './NCTGraphiteMeta.js';
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
 import { NCTGraphiteParamLabel } from './NCTGraphiteHint.js';
 
@@ -6,6 +7,7 @@ export const NCTGraphiteSliderMeta: NCTGraphiteComponentMeta = {
   category: 'widgets',
   description: 'Labeled range slider with live value readout for lab control panels',
   props: {
+    ...appearancePropMeta,
     label: { type: 'string', required: true, description: 'Uppercase control label' },
     value: { type: 'number', required: true, description: 'Current value' },
     min: { type: 'number', required: true, description: 'Range minimum' },
@@ -19,7 +21,7 @@ export const NCTGraphiteSliderMeta: NCTGraphiteComponentMeta = {
   dependencies: [],
 };
 
-export interface NCTGraphiteSliderProps {
+export interface NCTGraphiteSliderProps extends NCTGraphiteAppearanceProps {
   label: string;
   value: number;
   min: number;
@@ -31,10 +33,10 @@ export interface NCTGraphiteSliderProps {
 }
 
 /** Labeled range slider with live value readout (lab control-panel idiom). */
-export function NCTGraphiteSlider({ label, value, min, max, step = 1, format, onChange, hint }: NCTGraphiteSliderProps) {
+export function NCTGraphiteSlider({ label, value, min, max, step = 1, format, onChange, hint, opacity, cornerRadius }: NCTGraphiteSliderProps) {
   const text = format ? format(value) : String(value);
   return (
-    <div>
+    <div style={appearanceStyle({ opacity, cornerRadius })}>
       <NCTGraphiteParamLabel label={label} hint={hint} trailing={text} />
       <input
         type="range"

@@ -82,7 +82,7 @@ intended behavior rather than assuming every reference control is functional.
 - [x] Define shared versus per-device or breakpoint-specific layouts, persist overrides, show which properties are overridden, and allow reverting to inherited values.
 - [x] Add a geometry inspector for scene-item position and size with units, validation, and two-way synchronization with canvas manipulation.
 - [ ] Implement editable edge constraints/pinning and resizing behavior across viewport sizes, with clear inherited and overridden states; Proshade's pinning controls are illustrative.
-- [ ] Provide an appearance inspector for the supported widget properties, including variants, opacity, corner radius, typography and color where applicable, with theme-aware defaults.
+- [x] Provide an appearance inspector for the supported widget properties: shared opacity and corner-radius props on sixteen widgets with theme-aware token defaults, editable in the inspector and passed through preview, XML, and the catalog.
 - [x] Expand the layers/tree panel with hierarchy, selection, ordering, useful dimensions and object counts; add functional visibility and locking if supported by the document model.
 - [x] Store an app-level appearance theme (light/dark/lab) on the document with XML round-trip and an App settings selector; Studio chrome is unaffected.
 - [x] Render wireframe and outline modes with unthemed controls via the render-mode switch (editor bar + View menu); the mode persists across reload.
