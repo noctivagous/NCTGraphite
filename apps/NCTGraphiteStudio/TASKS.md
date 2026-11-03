@@ -70,7 +70,7 @@ intended behavior rather than assuming every reference control is functional.
 - [ ] Select and hover objects directly on the canvas with clear bounds and handles, including nested containers, without changing their layout or blocking control interactions in preview mode.
 - [ ] Move and resize scene items with pointer handles, parent-relative coordinates, zoom-corrected pointer movement, minimum dimensions, and one undo step per gesture.
 - [ ] Support canvas-based nesting and reparenting with correct coordinates, prevent invalid parent/child relationships and cycles, and retain tree-based alternatives for stack and grid layouts.
-- [ ] Add canvas zoom controls, percentage readout, fit/reset, and scrolling or panning; keep selection and pointer operations accurate at each zoom.
+- [x] Add canvas zoom controls, percentage readout, fit/reset, and scrolling or panning; keep selection and pointer operations accurate at each zoom.
 - [ ] Add independent grid visibility and snapping controls, configurable spacing, visible guides, and predictable snapping during placement, movement, and resize.
 - [x] Add keyboard delete and duplicate shortcuts, focus-safe handling for text inputs, and accessible alternatives for moving and resizing.
 
@@ -81,7 +81,7 @@ intended behavior rather than assuming every reference control is functional.
 - [x] Add a geometry inspector for scene-item position and size with units, validation, and two-way synchronization with canvas manipulation.
 - [ ] Implement editable edge constraints/pinning and resizing behavior across viewport sizes, with clear inherited and overridden states; Proshade's pinning controls are illustrative.
 - [ ] Provide an appearance inspector for the supported widget properties, including variants, opacity, corner radius, typography and color where applicable, with theme-aware defaults.
-- [ ] Expand the layers/tree panel with hierarchy, selection, ordering, useful dimensions and object counts; add functional visibility and locking if supported by the document model.
+- [x] Expand the layers/tree panel with hierarchy, selection, ordering, useful dimensions and object counts; add functional visibility and locking if supported by the document model.
 
 ### Components and workspace
 
