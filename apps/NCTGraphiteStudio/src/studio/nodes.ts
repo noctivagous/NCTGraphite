@@ -37,6 +37,23 @@ export function coerceInput(raw: string): string | number | boolean {
 export type DropZone = 'before' | 'inside' | 'after';
 
 /** Palette glyphs that read as the control itself, Proshade style. */
+/** Device preset glyphs for the preview-size switcher. */
+export const DEVICE_ICONS: Record<string, string> = {
+  fluid: '⇔', phone: '☎', tablet: '▭', desktop: '⌨',
+};
+
+/** Palette category glyphs. */
+export const CATEGORY_ICONS: Record<string, string> = {
+  layout: '▦', content: '◫', modules: '◈',
+};
+
+/** Inspector section glyphs, keyed by section id. */
+export const SECTION_ICONS: Record<string, string> = {
+  tree: '☷', module: '▢', props: '☰', geom: '⌖', canvas: '◰', vis: '⊙',
+  grid: '╬', binding: '⚡', logic: 'ƒ', settings: '✦',
+};
+
+/** Palette glyphs that read as the control itself, Proshade style. */
 export const PALETTE_ICONS: Record<string, string> = {
   accordion: '▤', columns: '❚❚', grid: '▦', layoutItem: '◽', overlay: '◧',
   panel: '▣', row: '⇔', scene: '◈', sceneItem: '◇', stack: '⊞', toolbar: '⬒',

@@ -63,3 +63,5 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 .canvas-mode > button, .sidebar-intro button, .property:not(.tree-ops) > button, .readout button { border: 1px solid #0c0e11; background: #2c2f34; border-radius: 3px; color: #c7cdd5; padding: 5px 10px; font-size: 11px; }
 .canvas-mode > button.primary { background: linear-gradient(#608dd4,#3f69ab); color: white; font-weight: 700; }
 .readout button { padding: 0 6px; font-size: 10px; }
+.sec-icon { display: inline-block; min-width: 1.25em; margin-right: .3em; color: #80a8eb; font-style: normal; }
+.sidebar-title > span:last-child { margin-left: auto; }

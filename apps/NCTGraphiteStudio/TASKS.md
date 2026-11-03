@@ -97,6 +97,7 @@ intended behavior rather than assuming every reference control is functional.
 - [x] Provide an NCTGraphiteWindow widget (title bar, resizable property with corner handle, edge docking) across the document model, XML, catalog, renderer, palette, and inspector.
 - [x] Play the app with live commands (the calculator computes); AI menu with placeholder chat hosted in an NCTGraphiteWindow.
 - [x] Style all Studio chrome buttons (Play, module save, edit, remove) with the Studio idiom; app widgets stay on the app theme and wireframe/outline modes.
+- [x] Give device presets, palette categories, inspector sections, and toolbar buttons control-like icons.
 - [ ] Test the end-to-end workflows: drag, nest, select, edit, resize, undo, device overrides, save/reopen, and keyboard alternatives. Verify visual fidelity and usability separately when browser testing is authorized.
 
 ## Follow-up from builder review

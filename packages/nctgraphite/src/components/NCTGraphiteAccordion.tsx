@@ -15,7 +15,7 @@ export const NCTGraphiteAccordionMeta: NCTGraphiteComponentMeta = {
 };
 
 export interface NCTGraphiteAccordionProps {
-  title: string;
+  title: ReactNode;
   defaultOpen?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
