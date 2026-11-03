@@ -6,6 +6,7 @@ import { DEVICE_PRESETS, GRID_DEFAULT_COLUMNS, RECOVERY_STORAGE_KEY } from './st
 import { coerceInput, defaultsFor, parentOf } from './studio/nodes';
 import { Tree } from './studio/Tree';
 import { Preview, SceneSelectionOverlay } from './studio/Preview';
+import { starterLogic, starterProject } from './studio/starter';
 import {
   ProjectConflictError,
   decodeProjectBundle,
@@ -25,7 +26,7 @@ import { FileSystemProjectStorage, canPickFolders, type StorageProvider } from '
 
 type PickerWindow = Window & { showDirectoryPicker?: (options?: { mode?: string }) => Promise<FileSystemDirectoryHandle> };
 
-const initial: Project = { name: 'Untitled app', density: 'compact', modules: [], root: { id: 'root', kind: 'stack', label: 'App layout', props: {}, children: [{ id: 'intro', kind: 'text', label: 'Welcome to your app', props: {}, children: [] }, { id: 'section', kind: 'accordion', label: 'Controls', props: {}, children: [{ id: 'action', kind: 'button', label: 'Get started', props: {}, children: [] }] }] } };
+const initial: Project = starterProject();
 
 
 
@@ -33,7 +34,7 @@ export default function App() {
   const [project, setProject] = useState<Project>(initial);
   const [past, setPast] = useState<Project[]>([]);
   const [future, setFuture] = useState<Project[]>([]);
-  const [selectedId, setSelected] = useState('section');
+  const [selectedId, setSelected] = useState('display');
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
   const [notice, setNotice] = useState('Ready');
   const [previewWidth, setPreviewWidth] = useState<number | null>(null);
@@ -156,7 +157,7 @@ export default function App() {
   const [savedFingerprint, setSavedFingerprint] = useState<string | null>(null);
   const [conflictPath, setConflictPath] = useState<string | null>(null);
   const [recovery, setRecovery] = useState<RecoveryPayload | null>(null);
-  const [logic, setLogic] = useState<AppLogic>(() => defaultAppLogic());
+  const [logic, setLogic] = useState<AppLogic>(() => starterLogic());
   const [previewMode, setPreviewMode] = useState(false);
   const [previewOverrides, setPreviewOverrides] = useState<PreviewValues>({});
   const [commandLog, setCommandLog] = useState<string[]>([]);
@@ -224,7 +225,7 @@ export default function App() {
     setManifest(defaultManifest(fresh.name));
     setOtherViews({});
     setExtraFiles({});
-    setLogic(defaultAppLogic());
+    setLogic(starterLogic());
     setPreviewOverrides({});
     setCommandLog([]);
     setRevisions({});

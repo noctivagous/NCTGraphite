@@ -90,6 +90,18 @@ test('scene resize honors handle direction and minimum dimensions', () => {
   assert.deepEqual(model.resizeSceneRect(orig, 'n', 0, 500, snap), { left: 32, top: 250, width: 340, height: 14 });
 });
 
+test('calculator starter is a valid bound scene with bound display logic', async () => {
+  const starter = await server.ssrLoadModule('./src/studio/starter.ts');
+  const project = starter.starterProject();
+  assert.equal(lib.validLayoutDocument(project), true);
+  assert.equal(project.root.kind, 'scene');
+  const display = lib.findLayoutNode(project.root, 'display');
+  assert.equal(display?.kind, 'valueDisplay');
+  const logic = starter.starterLogic();
+  assert.deepEqual(lib.validateAppLogic(logic), []);
+  assert.equal(lib.getBindingIssues(project, logic).length, 0);
+});
+
 test('canvas reparent keeps documents valid and refuses cycles', () => {
   const root = doc().root;
   const moved = lib.moveLayoutNode(root, 'slider', 'toolbar', 1);

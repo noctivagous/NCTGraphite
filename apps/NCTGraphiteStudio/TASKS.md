@@ -67,7 +67,7 @@ intended behavior rather than assuming every reference control is functional.
 ### Canvas editing
 
 - [x] Drag palette items onto a canvas, show a drag preview and a valid drop target, and insert them at the appropriate tree position or into a scene at the drop coordinates; retain a keyboard-accessible insertion path.
-- [ ] Select and hover objects directly on the canvas with clear bounds and handles, including nested containers, without changing their layout or blocking control interactions in preview mode.
+- [x] Select and hover objects directly on the canvas with clear bounds and handles, including nested containers, without changing their layout or blocking control interactions in preview mode.
 - [x] Move and resize scene items with pointer handles, parent-relative coordinates, zoom-corrected pointer movement, minimum dimensions, and one undo step per gesture.
 - [x] Support canvas-based nesting and reparenting with correct coordinates, prevent invalid parent/child relationships and cycles, and retain tree-based alternatives for stack and grid layouts.
 - [x] Add canvas zoom controls, percentage readout, fit/reset, and scrolling or panning; keep selection and pointer operations accurate at each zoom.
@@ -86,8 +86,8 @@ intended behavior rather than assuming every reference control is functional.
 ### Components and workspace
 
 - [x] Close palette gaps for Proshade's slider, toggle, segmented control, icon button, panel/container, and toolbar strip; expose existing library widgets through the document catalog, inspector, and renderer where appropriate.
-- [ ] Complete property editing and preview behavior for Proshade controls, including tab and list contents, selected values, field placeholders, button styles, and image wells.
-- [ ] Organize the workspace around a compact palette, canvas, layers and inspector with readable type hierarchy; keep the layout and density themeable instead of imposing the Proshade style on built apps.
+- [x] Complete property editing and preview behavior for Proshade controls, including tab and list contents, selected values, field placeholders, button styles, and image wells.
+- [x] Organize the workspace around a compact palette, canvas, layers and inspector with readable type hierarchy; keep the layout and density themeable instead of imposing the Proshade style on built apps.
 - [x] Add a useful canvas status/selection readout and an export inspection flow showing the actual serialized layout; keep runnable app export as a separate task.
 - [ ] Test the end-to-end workflows: drag, nest, select, edit, resize, undo, device overrides, save/reopen, and keyboard alternatives. Verify visual fidelity and usability separately when browser testing is authorized.
 
