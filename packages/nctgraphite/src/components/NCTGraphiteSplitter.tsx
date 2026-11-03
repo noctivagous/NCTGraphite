@@ -36,6 +36,19 @@ function normalize(sizes: number[] | undefined, count: number): number[] {
   return total > 0 ? sizes.map(s => s / total) : Array.from({ length: count }, () => 1 / count);
 }
 
+/** Move `deltaFraction` of total space from pane `index + 1` to pane `index`,
+ * clamped so neither pane drops below `minSize`. Pure; powers drag + keyboard. */
+export function shiftPaneSizes(base: number[], index: number, deltaFraction: number, minSize: number): number[] {
+  const next = [...base];
+  const clamped = Math.min(
+    Math.max(base[index] + deltaFraction, minSize),
+    base[index] + base[index + 1] - minSize,
+  );
+  next[index + 1] = base[index] + base[index + 1] - clamped;
+  next[index] = clamped;
+  return next;
+}
+
 /** Resizable panes separated by draggable, keyboard-adjustable handles. */
 export function NCTGraphiteSplitter({
   direction = 'row', defaultSizes, sizes, onSizesChange, minSize = 0.1,
@@ -54,14 +67,7 @@ export function NCTGraphiteSplitter({
   }, [sizes, onSizesChange]);
 
   const shift = useCallback((base: number[], index: number, deltaFraction: number) => {
-    const next = [...base];
-    const clamped = Math.min(
-      Math.max(base[index] + deltaFraction, minSize),
-      base[index] + base[index + 1] - minSize,
-    );
-    next[index + 1] = base[index] + base[index + 1] - clamped;
-    next[index] = clamped;
-    applySizes(next);
+    applySizes(shiftPaneSizes(base, index, deltaFraction, minSize));
   }, [minSize, applySizes]);
 
   const startDrag = (index: number, clientOrigin: number) => {

@@ -7,7 +7,7 @@ import { createServer } from 'vite';
 
 const server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom' });
 after(() => server.close());
-const { NCTGraphiteStack, NCTGraphiteGrid, NCTGraphiteOverlay, NCTGraphiteAccordion, NCTGraphiteToolbar, NCTGraphiteScene, NCTGraphiteSceneItem, NCTGraphiteLayoutItem, NCTGraphiteColumns, NCTGraphiteLayoutShell, NCTGraphiteBaseline, NCTGraphitePanel, NCTGraphiteSplitter, NCTGraphiteAppShell } = await server.ssrLoadModule('../../packages/nctgraphite/src/index.ts');
+const { NCTGraphiteStack, NCTGraphiteGrid, NCTGraphiteOverlay, NCTGraphiteAccordion, NCTGraphiteToolbar, NCTGraphiteScene, NCTGraphiteSceneItem, NCTGraphiteLayoutItem, NCTGraphiteColumns, NCTGraphiteLayoutShell, NCTGraphiteBaseline, NCTGraphitePanel, NCTGraphiteSplitter, NCTGraphiteAppShell, shiftPaneSizes } = await server.ssrLoadModule('../../packages/nctgraphite/src/index.ts');
 const render = (component, props, ...children) => renderToStaticMarkup(React.createElement(component, props, ...children));
 
 test('stack composes a wrapping row with baseline alignment', () => {
@@ -108,6 +108,26 @@ test('density sheet defines the compact/comfortable contract without colors or f
     assert.ok(css.includes(token), `missing ${token}`);
   }
   assert.doesNotMatch(css, /#[0-9a-f]{3,6}/i); assert.doesNotMatch(css, /font-family/);
+});
+test('splitter resize conserves space and respects the minimum', () => {
+  const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-9, `${actual} ~= ${expected}`);
+  const grown = shiftPaneSizes([0.25, 0.75], 0, 0.1, 0.1);
+  close(grown[0], 0.35); close(grown[1], 0.65);
+  const floored = shiftPaneSizes([0.25, 0.75], 0, -0.2, 0.1);
+  close(floored[0], 0.1); close(floored[1], 0.9);
+  const capped = shiftPaneSizes([0.5, 0.5], 0, 0.9, 0.1);
+  close(capped[0], 0.9); close(capped[1], 0.1);
+  const total = shiftPaneSizes([0.2, 0.3, 0.5], 1, 0.05, 0.1).reduce((a, b) => a + b, 0);
+  close(total, 1);
+});
+test('layout shell forwards breakpoints to its body grid', () => {
+  const html = render(NCTGraphiteLayoutShell, { columns: '1fr', breakpoints: [{ minWidth: 900, columns: '200px 1fr' }] }, 'Body');
+  assert.match(html, /grid-template-columns:1fr/);
+});
+test('app shell exposes its stacking breakpoint and region landmarks', () => {
+  const html = render(NCTGraphiteAppShell, { sectionCount: 1, stackMinWidth: 700, header: React.createElement('div', null, 'H'), footer: React.createElement('div', null, 'F') }, 'Only');
+  assert.equal((html.match(/<section/g) || []).length, 1);
+  assert.match(html, /<header/); assert.match(html, /<footer/);
 });
 test('app shell wraps body regions with per-region styling', () => {
   const html = render(NCTGraphiteAppShell, { sectionCount: 2, sectionClassName: ['left', 'right'], sectionStyle: [{ order: 0 }, { order: 1 }] }, 'A', 'B');
