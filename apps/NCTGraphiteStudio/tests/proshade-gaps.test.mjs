@@ -90,6 +90,28 @@ test('scene resize honors handle direction and minimum dimensions', () => {
   assert.deepEqual(model.resizeSceneRect(orig, 'n', 0, 500, snap), { left: 32, top: 250, width: 340, height: 14 });
 });
 
+test('canvas reparent keeps documents valid and refuses cycles', () => {
+  const root = doc().root;
+  const moved = lib.moveLayoutNode(root, 'slider', 'toolbar', 1);
+  assert.equal(moved.children[1].children[1].id, 'slider');
+  assert.equal(lib.validLayoutDocument({ name: 'D', density: 'compact', modules: [], root: moved }), true);
+  const panel = lib.findLayoutNode(root, 'panel');
+  assert.ok(lib.findLayoutNode(panel, 'slider'));
+  assert.deepEqual(lib.moveLayoutNode(root, 'panel', 'slider', 0), root);
+  assert.deepEqual(lib.moveLayoutNode(root, 'root', 'panel', 0), root);
+});
+
+test('scene reparent repositions with snapped coordinates in one edit', () => {
+  const root = doc().root;
+  const node = lib.findLayoutNode(root, 'slider');
+  const pt = model.dropCoords(120, 90, { left: 20, top: 30 }, 100);
+  const placed = { ...node, props: { ...node.props, left: model.snapValue(pt.x, true, 10), top: model.snapValue(pt.y, true, 10) } };
+  const next = lib.updateLayoutNode(lib.removeLayoutNode(root, 'slider'), 'toolbar', (n) => ({ ...n, children: [...n.children, placed] }));
+  assert.equal(lib.findLayoutNode(next, 'slider').props.left, 100);
+  assert.equal(lib.findLayoutNode(next, 'slider').props.top, 60);
+  assert.equal(lib.findLayoutNode(next, 'panel').children.length, 2);
+});
+
 test('tree moves respect containers and cycles for the new kinds', () => {
   const root = doc().root;
   const moved = lib.moveLayoutNode(root, 'slider', 'toolbar', 1);

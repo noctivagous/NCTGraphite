@@ -118,8 +118,8 @@ export function SceneSelectionOverlay({ artRef, node, zoom, snap, revision, onCo
   </div>;
 }
 
-export function Preview({ node, modules, selected, select, logic, values, onValue, onCommand, widePreview = false, seen = new Set<string>(), dropId = null }: { node: Node; modules: SavedModule[]; selected: string; select: (id: string) => void; logic?: AppLogic; values?: PreviewValues; onValue?: (key: string, value: string | number | boolean) => void; onCommand?: (id: string) => void; widePreview?: boolean; seen?: Set<string>; dropId?: string | null }) {
-  const children = node.children.map(child => <Preview key={child.id} node={child} modules={modules} selected={selected} select={select} logic={logic} values={values} onValue={onValue} onCommand={onCommand} widePreview={widePreview} seen={seen} dropId={dropId} />);
+export function Preview({ node, modules, selected, select, logic, values, onValue, onCommand, widePreview = false, seen = new Set<string>(), dropId = null, onNodeDragStart = null }: { node: Node; modules: SavedModule[]; selected: string; select: (id: string) => void; logic?: AppLogic; values?: PreviewValues; onValue?: (key: string, value: string | number | boolean) => void; onCommand?: (id: string) => void; widePreview?: boolean; seen?: Set<string>; dropId?: string | null; onNodeDragStart?: ((id: string, e: React.DragEvent) => void) | null }) {
+  const children = node.children.map(child => <Preview key={child.id} node={child} modules={modules} selected={selected} select={select} logic={logic} values={values} onValue={onValue} onCommand={onCommand} widePreview={widePreview} seen={seen} dropId={dropId} onNodeDragStart={onNodeDragStart} />);
   const wide = widePreview ? node.wide ?? {} : {};
   const valueBinding = logic?.bindings.find(b => b.nodeId === node.id && b.prop === 'value' && b.stateKey);
   const boundValue = valueBinding?.stateKey && values ? values[valueBinding.stateKey] : undefined;
@@ -181,10 +181,11 @@ export function Preview({ node, modules, selected, select, logic, values, onValu
     case 'module': {
       const def = modules.find(m => m.id === node.moduleId);
       content = def && !seen.has(def.id)
-        ? <Preview node={def.root} modules={modules} selected={selected} select={select} logic={logic} values={values} onValue={onValue} onCommand={onCommand} widePreview={widePreview} seen={new Set(seen).add(def.id)} dropId={dropId} />
+        ? <Preview node={def.root} modules={modules} selected={selected} select={select} logic={logic} values={values} onValue={onValue} onCommand={onCommand} widePreview={widePreview} seen={new Set(seen).add(def.id)} dropId={dropId} onNodeDragStart={onNodeDragStart} />
         : <span className="preview-text">{node.label}</span>;
       break;
     }
   }
-  return <div className={`preview-node ${selected === node.id ? 'is-selected' : ''}${hidden ? ' is-hidden' : ''}${locked ? ' is-locked' : ''}${dropId === node.id ? ' drop-target' : ''}`} data-node-id={node.id} data-kind={node.kind} {...(containers.includes(node.kind) ? { 'data-container': 'true' } : {})} style={hidden ? { opacity: 0.45 } : undefined} onClick={e => { e.stopPropagation(); if (!locked) select(node.id); }}><span className="node-tag">{locked ? 'locked · ' : ''}{hidden ? 'hidden · ' : ''}{dropId === node.id ? 'drop here · ' : ''}{labels[node.kind]}</span>{content}</div>;
+  const movable = onNodeDragStart != null && selected === node.id && !locked && !logic;
+  return <div className={`preview-node ${selected === node.id ? 'is-selected' : ''}${hidden ? ' is-hidden' : ''}${locked ? ' is-locked' : ''}${dropId === node.id ? ' drop-target' : ''}`} data-node-id={node.id} data-kind={node.kind} {...(containers.includes(node.kind) ? { 'data-container': 'true' } : {})} draggable={movable} onDragStart={movable && onNodeDragStart ? e => onNodeDragStart(node.id, e) : undefined} style={hidden ? { opacity: 0.45 } : undefined} onClick={e => { e.stopPropagation(); if (!locked) select(node.id); }}><span className="node-tag">{locked ? 'locked · ' : ''}{hidden ? 'hidden · ' : ''}{dropId === node.id ? 'drop here · ' : ''}{labels[node.kind]}</span>{content}</div>;
 }
