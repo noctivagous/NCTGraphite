@@ -3,6 +3,25 @@ export const NCTGRAPHITE_VERSION = "0.0.0";
 export { NCTParameterPanel, useNCTParameters } from './parameters/NCTGraphiteParameters.js';
 export type { NCTParameterDefinition, NCTParameterValues } from './parameters/NCTGraphiteParameters.js';
 
+export {
+  NCTGRAPHITE_DOCUMENT_KIND,
+  NCTGRAPHITE_DOCUMENT_VERSION,
+  NCTGRAPHITE_DOCUMENT_FILE_TYPE,
+  NCTGRAPHITE_DOCUMENT_FILE_EXTENSION,
+  NCTGraphiteDocument,
+  NCTGraphiteDocumentController,
+  createNCTGraphiteDocumentId,
+  createNCTGraphiteLayerId,
+} from './document/NCTGraphiteDocument.js';
+export type {
+  NCTGraphiteDocumentCanvas,
+  NCTGraphiteDocumentView,
+  NCTGraphiteDocumentSnapshot,
+  NCTGraphiteLayerRecord,
+  NCTGraphiteUntitledDocumentOptions,
+} from './document/NCTGraphiteDocument.js';
+export { useNCTGraphiteDocument } from './document/NCTGraphiteDocumentReact.js';
+
 export { fitDocumentToViewport, documentToViewport, viewportToDocument } from './grid/NCTGraphiteViewport.js';
 export type { NCTGraphiteViewportTransform, NCTGraphiteViewportSize, NCTGraphiteViewportPoint } from './grid/NCTGraphiteViewport.js';
 
@@ -81,3 +100,33 @@ export type { NCTGraphiteDialogProps } from './components/NCTGraphiteDialog.js';
 
 export { NCTGraphiteToast, NCTGraphiteToastMeta } from './components/NCTGraphiteToast.js';
 export type { NCTGraphiteToastProps } from './components/NCTGraphiteToast.js';
+
+export {
+  convexHull, chaikinSmooth, polygonArea, clusterPolygons, tracePerimeter, hullLoopsFromPolygons,
+} from './utilities/graphics/hull.js';
+export type { HullMode, HullPolygon, HullLoop } from './utilities/graphics/hull.js';
+
+export {
+  metaballKernel, fieldAt, gooToThreshold, buildGridValues, closedRingToBezierD, ringToPathD,
+  contourLayersForBlobs, BRUSH_NOISE_PRESETS, brushNoisePreset, perlin2, fbm2, noisyStampCenters,
+} from './utilities/graphics/metaballField.js';
+export type {
+  FieldBlob, PixelPt, ContourLayer, BrushNoisePreset, NoiseStampPt,
+} from './utilities/graphics/metaballField.js';
+
+export { satoNeck, roundRectStamp } from './utilities/graphics/satoNeck.js';
+export type { StampCenter, RoundRectStamp, SatoNeck } from './utilities/graphics/satoNeck.js';
+
+export {
+  makeVectorField, vectorStyle, stampVectorField, applyVectorAttractors,
+} from './utilities/graphics/vectorField.js';
+export type {
+  VectorFieldMode, VectorSample, VectorAttractor, VectorStyle, VectorStampAction,
+} from './utilities/graphics/vectorField.js';
+
+export {
+  sampleSpacing, makeSampleLattice, shadingFalloff, stampSampleGain,
+} from './utilities/graphics/sampleLattice.js';
+export type {
+  SampleGainPoint, ShadingFalloff, SampleStampAction, SampleRotationMode,
+} from './utilities/graphics/sampleLattice.js';
