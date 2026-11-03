@@ -34,7 +34,7 @@ export function NCTGraphiteSegmented({ label, options, value, onChange, hint }: 
   return (
     <div>
       {label ? <NCTGraphiteParamLabel label={label} hint={hint} /> : null}
-      <div className="flex gap-1 p-1 rounded-[8px] bg-[#15151e] border border-[#23232f]">
+      <div className="flex flex-wrap gap-1 p-1 rounded-[8px] bg-[#15151e] border border-[#23232f]">
         {options.map((opt) => {
           const active = opt.value === value;
           return (
@@ -42,7 +42,7 @@ export function NCTGraphiteSegmented({ label, options, value, onChange, hint }: 
               key={opt.value}
               type="button"
               onClick={() => onChange(opt.value)}
-              className={`flex-1 px-2 py-1 text-[11px] rounded-[6px] ${
+              className={`flex-1 min-w-[4.25rem] px-2 py-1 text-[11px] rounded-[6px] ${
                 active ? 'bg-[#7c5cff] text-white' : 'text-[#7a7680]'
               }`}
             >

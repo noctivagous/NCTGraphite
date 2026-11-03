@@ -118,10 +118,13 @@ export { satoNeck, roundRectStamp } from './utilities/graphics/satoNeck.js';
 export type { StampCenter, RoundRectStamp, SatoNeck } from './utilities/graphics/satoNeck.js';
 
 export {
-  makeVectorField, vectorStyle, stampVectorField, applyVectorAttractors,
+  makeVectorField, vectorStyle, stampVectorField, applyVectorAttractors, vectorStampDelta,
+  VECTOR_BRUSH_OPS, vectorBrushOp, findVectorBrushOp, vectorBrushPickerOps,
+  constrainVector, constrainVectorField, snapVectorHeading, quantizeVectorHeading, DEFAULT_VECTOR_LIMITS,
 } from './utilities/graphics/vectorField.js';
 export type {
-  VectorFieldMode, VectorSample, VectorAttractor, VectorStyle, VectorStampAction,
+  VectorFieldMode, VectorSample, VectorAttractor, VectorStyle, VectorStyleOptions, VectorStampAction,
+  VectorBrushOp, VectorBrushContext, VectorFieldLimits,
 } from './utilities/graphics/vectorField.js';
 
 export {
