@@ -78,6 +78,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
+/** Paths are project-relative, with no traversal or platform-dependent separators. */
+export function isSafeProjectPath(path: string): boolean {
+  return path.length > 0 && !path.includes('\\') && !path.includes('\0') &&
+    path.split('/').every(part => part !== '' && part !== '.' && part !== '..' && part !== '__proto__' && part !== 'constructor' && part !== 'prototype');
+}
+
 /** Validate a manifest value. Returns error messages; empty means valid. */
 export function validateProjectManifest(value: unknown): string[] {
   const errors: string[] = [];
@@ -87,13 +93,13 @@ export function validateProjectManifest(value: unknown): string[] {
     errors.push('version must be an integer');
   }
   if (typeof value.name !== 'string' || !value.name) errors.push('name must be a non-empty string');
-  if (typeof value.entry !== 'string' || !value.entry) errors.push('entry must be a view path');
-  if (!Array.isArray(value.views) || value.views.some((v) => typeof v !== 'string')) {
+  if (typeof value.entry !== 'string' || !isSafeProjectPath(value.entry)) errors.push('entry must be a safe project-relative view path');
+  if (!Array.isArray(value.views) || value.views.some((v) => typeof v !== 'string' || !isSafeProjectPath(v))) {
     errors.push('views must be an array of paths');
   } else if (typeof value.entry === 'string' && !value.views.includes(value.entry)) {
     errors.push('views must include the entry view');
   }
-  if (value.themes !== undefined && (!Array.isArray(value.themes) || value.themes.some((t) => typeof t !== 'string')) ) {
+  if (value.themes !== undefined && (!Array.isArray(value.themes) || value.themes.some((t) => typeof t !== 'string' || !isSafeProjectPath(t))) ) {
     errors.push('themes must be an array of paths');
   }
   if (value.dependencies !== undefined) {
@@ -115,12 +121,22 @@ export function migrateProjectManifest(data: unknown): ProjectManifest {
   if (typeof version !== 'number' || !Number.isInteger(version)) {
     throw new TypeError('Invalid project manifest: version must be an integer');
   }
+  if (version < 0) throw new TypeError(`Invalid project version ${version}`);
   if (version > PROJECT_VERSION) {
     throw new RangeError(`Unsupported project version ${version} (newest supported is ${PROJECT_VERSION})`);
   }
   if (typeof data.name !== 'string' || !data.name) throw new TypeError('Invalid project manifest: missing name');
   if (typeof data.entry !== 'string' || !data.entry) throw new TypeError('Invalid project manifest: missing entry');
   // v0 had no views/themes/dependencies lists; v1 reads also tolerate them missing.
+  for (const key of ['views', 'themes'] as const) {
+    const value = data[key];
+    if (value !== undefined && (!Array.isArray(value) || value.some(item => typeof item !== 'string'))) {
+      throw new TypeError(`Invalid project manifest: ${key} must be an array of paths`);
+    }
+  }
+  if (data.dependencies !== undefined && (!isRecord(data.dependencies) || Object.values(data.dependencies).some(value => typeof value !== 'string'))) {
+    throw new TypeError('Invalid project manifest: dependencies must map names to version strings');
+  }
   const views = Array.isArray(data.views)
     ? data.views.filter((v): v is string => typeof v === 'string')
     : [data.entry as string];
@@ -147,6 +163,7 @@ export function migrateProjectManifest(data: unknown): ProjectManifest {
 
 /** Assemble stored file contents into a validated snapshot. */
 export function openProjectSnapshot(files: Record<string, string>): ProjectSnapshot {
+  for (const path of Object.keys(files)) if (!isSafeProjectPath(path)) throw new Error(`Invalid project path: ${path}`);
   const raw = files[PROJECT_MANIFEST_FILENAME];
   if (raw === undefined) throw new Error(`Not a Studio project: missing ${PROJECT_MANIFEST_FILENAME}`);
   let data: unknown;
@@ -293,7 +310,7 @@ export function decodeProjectBundle(text: string): ProjectSnapshot {
   } catch {
     throw new Error('Invalid project bundle: not valid JSON');
   }
-  if (!isRecord(data) || data.format !== PROJECT_BUNDLE_FORMAT || !isRecord(data.files)) {
+  if (!isRecord(data) || data.format !== PROJECT_BUNDLE_FORMAT || data.version !== 1 || !isRecord(data.files)) {
     throw new Error('Invalid project bundle');
   }
   const files: Record<string, string> = {};
@@ -328,7 +345,7 @@ export function decodeRecovery(text: string): RecoveryPayload {
   } catch {
     throw new Error('Invalid recovery data');
   }
-  if (!isRecord(data) || data.kind !== PROJECT_RECOVERY_KIND || !isRecord(data.snapshot)) {
+  if (!isRecord(data) || data.kind !== PROJECT_RECOVERY_KIND || data.version !== 1 || !isRecord(data.snapshot)) {
     throw new Error('Invalid recovery data');
   }
   const raw = data.snapshot as Record<string, unknown>;

@@ -235,3 +235,27 @@ test('window kind registers with resizable and dock props', async () => {
   assert.deepEqual(back, doc);
   assert.match(lib.serializeLayoutDocument(doc), /NCTGraphiteWindow/);
 });
+
+test('scene items pin and stretch with right/bottom insets', () => {
+  const doc = {
+    name: 'P', density: 'compact', theme: 'light', modules: [],
+    root: { id: 's', kind: 'scene', label: 'S', props: { width: 320, height: 440 }, children: [
+      { id: 'a', kind: 'sceneItem', label: 'A', props: { left: 16, top: 16, right: 16, height: 64 }, children: [] },
+      { id: 'b', kind: 'sceneItem', label: 'B', props: { left: 16, top: 96, width: 64, height: 56 }, children: [],
+        wide: { right: 16 } },
+    ] },
+  };
+  assert.equal(lib.validLayoutDocument(doc), true);
+  assert.deepEqual(lib.parseLayoutDocument(lib.serializeLayoutDocument(doc)), doc);
+});
+
+test('reparenting an existing scene item places it at the new drop coordinates', async () => {
+  const { reparentNode } = await server.ssrLoadModule('./src/studio/nodes.ts');
+  const item = { id: 'item', kind: 'sceneItem', label: 'Item', props: { left: 5, top: 6, width: 40, height: 30 }, children: [] };
+  const root = { id: 'root', kind: 'stack', label: 'Root', props: {}, children: [item, { id: 'scene', kind: 'scene', label: 'Scene', props: {}, children: [] }] };
+  const result = reparentNode(root, 'item', 'scene', 'inside', { x: 90, y: 80 });
+  assert.ok(result.root);
+  assert.equal(lib.findLayoutNode(result.root, 'item').props.left, 90);
+  assert.equal(lib.findLayoutNode(result.root, 'item').props.top, 80);
+  assert.equal(lib.findLayoutNode(result.root, 'scene').children[0].id, 'item');
+});

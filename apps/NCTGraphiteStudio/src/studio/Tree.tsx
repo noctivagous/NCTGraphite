@@ -26,7 +26,7 @@ export function Tree({ node, modules, selected, select, depth = 0, dragId, onDra
   const name = node.kind === 'module' ? modules.find(m => m.id === node.moduleId)?.name ?? node.label : node.label || labels[node.kind];
   const dims = node.kind === 'sceneItem' && (node.props.width !== undefined || node.props.height !== undefined)
     ? `${String(node.props.width ?? '?')}×${String(node.props.height ?? '?')}` : null;
-  const flags = `${node.props.hidden === true ? ' hidden' : ''}${node.props.locked === true ? ' locked' : ''}`;
+  const flags = `${node.props.hidden === true ? ' hidden' : ''}${node.props.locked === true ? ' locked' : ''}${node.kind === 'sceneItem' && node.props.right !== undefined ? ' pinR' : ''}${node.kind === 'sceneItem' && node.props.bottom !== undefined ? ' pinB' : ''}`;
   const isContainer = containers.includes(node.kind);
   const dropClass = indicator ? ` drop-${indicator}` : '';
   return <>

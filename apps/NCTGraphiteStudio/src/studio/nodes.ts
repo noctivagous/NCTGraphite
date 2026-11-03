@@ -94,8 +94,12 @@ export function reparentNode(root: Node, nodeId: string, targetId: string, zone:
         note: `Moved ${name} into scene`,
       };
     }
+    const movedRoot = moveNode(root, nodeId, targetId, target.children.length);
+    const positionedRoot = target.kind === 'scene' && node.kind === 'sceneItem' && pos
+      ? update(movedRoot, nodeId, n => ({ ...n, props: { ...n.props, left: pos.x, top: pos.y } }))
+      : movedRoot;
     return {
-      root: moveNode(root, nodeId, targetId, target.children.length),
+      root: positionedRoot,
       placedId: nodeId,
       note: `Moved ${name} into ${target.label || labels[target.kind]}`,
     };

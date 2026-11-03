@@ -193,3 +193,16 @@ test('overwriting one reviewed conflict does not overwrite another', async () =>
   await assert.rejects(project.saveProjectToStorage(store, snapshot('Changed'), revisions, { forcePaths: [project.PROJECT_MANIFEST_FILENAME] }), err => err.path === project.PROJECT_MAIN_VIEW);
   assert.equal((await store.readFile(project.PROJECT_MANIFEST_FILENAME)).content, 'external manifest');
 });
+
+test('manifest and bundle reject unsafe paths and malformed data without rewriting', () => {
+  const invalid = { ...project.defaultManifest('App'), entry: '../outside.xml', views: ['../outside.xml'] };
+  assert.throws(() => project.migrateProjectManifest(invalid), /safe|paths/);
+  assert.throws(() => project.migrateProjectManifest({ ...project.defaultManifest('App'), views: [project.PROJECT_MAIN_VIEW, 5] }), /views/);
+  assert.throws(() => project.migrateProjectManifest({ ...project.defaultManifest('App'), dependencies: { react: 5 } }), /dependencies/);
+  const bundle = JSON.parse(project.encodeProjectBundle(snapshot()));
+  bundle.version = 2;
+  assert.throws(() => project.decodeProjectBundle(JSON.stringify(bundle)), /Invalid project bundle/);
+  bundle.version = 1;
+  bundle.files['../outside.txt'] = 'bad';
+  assert.throws(() => project.decodeProjectBundle(JSON.stringify(bundle)), /Invalid project path/);
+});

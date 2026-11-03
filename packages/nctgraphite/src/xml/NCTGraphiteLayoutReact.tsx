@@ -50,6 +50,28 @@ const DEFAULT_OPTIONS: { value: string; label: string }[] = [
 
 const noop = (): void => {};
 
+/** Scene overrides follow the same viewport breakpoint as grid overrides. */
+function ResponsiveSceneItem({ node, children }: { node: LayoutNode; children: React.ReactNode }) {
+  const [wide, setWide] = React.useState(false);
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const query = window.matchMedia('(min-width: 768px)');
+    const update = () => setWide(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+  const overrides: Record<string, string | number> = {};
+  if (wide) {
+    for (const key of ['left', 'top', 'right', 'bottom', 'width', 'height'] as const) {
+      const value = node.wide?.[key];
+      if (typeof value === 'string' || typeof value === 'number') overrides[key] = value;
+    }
+    if (typeof node.wide?.zIndex === 'number') overrides.zIndex = node.wide.zIndex;
+  }
+  return <NCTGraphiteSceneItem {...node.props} {...overrides}>{children}</NCTGraphiteSceneItem>;
+}
+
 /** React renderer for the shared layout-tree document. */
 export function NCTGraphiteLayoutView({
   node, modules, seen = new Set<string>(),
@@ -88,7 +110,7 @@ export function NCTGraphiteLayoutView({
     case 'scene':
       return <NCTGraphiteScene {...node.props}>{children}</NCTGraphiteScene>;
     case 'sceneItem':
-      return <NCTGraphiteSceneItem {...node.props}>{children}</NCTGraphiteSceneItem>;
+      return <ResponsiveSceneItem node={node}>{children}</ResponsiveSceneItem>;
     case 'layoutItem':
       return <NCTGraphiteLayoutItem {...node.props}>{children}</NCTGraphiteLayoutItem>;
     case 'text':

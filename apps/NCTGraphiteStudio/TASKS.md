@@ -111,3 +111,19 @@ intended behavior rather than assuming every reference control is functional.
 - [ ] Avoid recursively loading generated directories and large dependencies when opening a project; preserve unknown files and binary assets without requiring them all in memory.
 - [ ] Validate project paths and bundle versions, and reject malformed data without silently dropping manifest or logic fields.
 - [ ] Add interaction tests covering preview bindings, recovery, Save As, modules, keyboard use, and responsive behavior; visually verify in a browser when requested.
+
+## User workflow and code review follow-up
+
+- [ ] Offer an empty project and selectable starter templates; the current New action always creates the calculator example.
+- [ ] Replace Studio's hard-coded calculator command handling with an app-owned, safe logic runtime so unrelated apps can define and run their own commands.
+- [ ] Connect the AI chat to an authorized agent and project-editing tools, show proposed changes and errors, and allow the user to review or undo applied edits; the current chat is a placeholder.
+- [ ] Provide a complete project-to-running-app workflow, including preview/runtime parity, assets, dependencies, and a runnable export; clearly explain unavailable capabilities in the UI.
+- [ ] Validate direct scene manipulation at different zoom levels, nested scene offsets, CSS-unit geometry, responsive overrides, pointer cancellation, and keyboard operation; preserve intended anchors and dimensions.
+- [ ] Complete scene drop and reparent workflows for every drop zone, including moving items between nested scenes and preserving or deliberately converting coordinates and breakpoint overrides.
+- [ ] Resolve selection and editing rules for locked or hidden descendants, and make all delete, move, duplicate, and drag paths enforce the same rules.
+- [ ] Make the advertised device previews provide accurate dimensions and responsive behavior, including runtime scene overrides, nested layouts, and accessible custom viewport sizes.
+- [ ] Add accessible control-state editing, including typed state defaults, boolean preview inputs, useful binding validation, and clear feedback when an action cannot be performed.
+- [ ] Make save, open, import, recovery, and Save As workflows resilient to cancellation, permission failures, external changes, and multi-file write failures; test with real storage providers.
+- [ ] Preserve unknown manifest and logic data without silently dropping it, validate supported versions and project-relative paths throughout every import and save path, and test migration compatibility.
+- [ ] Break the remaining large Studio app component into focused workspace, project-session, inspector, and logic-editor components or hooks without changing document behavior.
+- [ ] Add automated interaction and accessibility tests for canvas gestures, keyboard shortcuts, menus, project lifecycle, modules, and preview state; verify the visual workflow when browser testing is authorized.
