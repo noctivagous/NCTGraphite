@@ -53,6 +53,35 @@ export function wrapInSceneItem(child: Node, x: number, y: number): Node {
   item.children = [child];
   return item;
 }
+
+export interface SceneRect { left: number; top: number; width: number; height: number }
+
+/** Snap a pointer-derived value to the grid, or round it when snapping is off. */
+export function snapValue(value: number, enabled: boolean, size: number): number {
+  const step = size >= 2 ? size : 10;
+  return enabled ? Math.round(value / step) * step : Math.round(value);
+}
+
+export const SCENE_MIN_WIDTH = 20;
+export const SCENE_MIN_HEIGHT = 14;
+
+/** Resize a scene rect from a handle direction (n/s/e/w combos) with pointer deltas. */
+export function resizeSceneRect(orig: SceneRect, dir: string, dx: number, dy: number, snap: (v: number) => number): SceneRect {
+  let { left, top, width, height } = orig;
+  if (dir.includes('e')) width = Math.max(SCENE_MIN_WIDTH, snap(orig.width + dx));
+  if (dir.includes('s')) height = Math.max(SCENE_MIN_HEIGHT, snap(orig.height + dy));
+  if (dir.includes('w')) {
+    const w = Math.max(SCENE_MIN_WIDTH, snap(orig.width - dx));
+    left = orig.left + (orig.width - w);
+    width = w;
+  }
+  if (dir.includes('n')) {
+    const h = Math.max(SCENE_MIN_HEIGHT, snap(orig.height - dy));
+    top = orig.top + (orig.height - h);
+    height = h;
+  }
+  return { left, top, width, height };
+}
 export const update = updateLayoutNode;
 export const remove = removeLayoutNode;
 export const cloneWithIds = cloneLayoutNode;
