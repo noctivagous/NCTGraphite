@@ -66,7 +66,7 @@ intended behavior rather than assuming every reference control is functional.
 
 ### Canvas editing
 
-- [ ] Drag palette items onto a canvas, show a drag preview and a valid drop target, and insert them at the appropriate tree position or into a scene at the drop coordinates; retain a keyboard-accessible insertion path.
+- [x] Drag palette items onto a canvas, show a drag preview and a valid drop target, and insert them at the appropriate tree position or into a scene at the drop coordinates; retain a keyboard-accessible insertion path.
 - [ ] Select and hover objects directly on the canvas with clear bounds and handles, including nested containers, without changing their layout or blocking control interactions in preview mode.
 - [ ] Move and resize scene items with pointer handles, parent-relative coordinates, zoom-corrected pointer movement, minimum dimensions, and one undo step per gesture.
 - [ ] Support canvas-based nesting and reparenting with correct coordinates, prevent invalid parent/child relationships and cycles, and retain tree-based alternatives for stack and grid layouts.

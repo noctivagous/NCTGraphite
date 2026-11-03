@@ -36,6 +36,23 @@ export const labels = layoutKindLabels;
 
 export const makeNode = makeLayoutNode;
 export const find = findLayoutNode;
+
+/** Zoom-corrected drop coordinates relative to a scene rect, clamped at zero. */
+export function dropCoords(clientX: number, clientY: number, rect: { left: number; top: number }, zoomPct: number): { x: number; y: number } {
+  const scale = zoomPct > 0 ? zoomPct / 100 : 1;
+  return {
+    x: Math.max(0, Math.round((clientX - rect.left) / scale)),
+    y: Math.max(0, Math.round((clientY - rect.top) / scale)),
+  };
+}
+
+/** Wrap a widget node in a scene item positioned at the drop point. */
+export function wrapInSceneItem(child: Node, x: number, y: number): Node {
+  const item = makeLayoutNode('sceneItem', `${child.label} item`);
+  item.props = { left: x, top: y };
+  item.children = [child];
+  return item;
+}
 export const update = updateLayoutNode;
 export const remove = removeLayoutNode;
 export const cloneWithIds = cloneLayoutNode;
