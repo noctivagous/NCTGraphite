@@ -72,6 +72,9 @@ function Preview({ node, modules, selected, select, logic, values, onValue, onCo
     if (valueBinding?.stateKey) onValue?.(valueBinding.stateKey, value);
   };
   const command = logic?.bindings.find(b => b.nodeId === node.id && b.commandId)?.commandId;
+  const hidden = node.props.hidden === true;
+  const locked = node.props.locked === true;
+  if (hidden && logic) return <></>;
   let content;
   switch (node.kind) {
     case 'stack': case 'row': content = <NCTGraphiteStack direction={node.kind === 'row' ? 'row' : 'column'} gap="var(--nct-content-gap)" {...node.props}>{children}</NCTGraphiteStack>; break;
@@ -128,7 +131,7 @@ function Preview({ node, modules, selected, select, logic, values, onValue, onCo
       break;
     }
   }
-  return <div className={`preview-node ${selected === node.id ? 'is-selected' : ''}`} onClick={e => { e.stopPropagation(); select(node.id); }}><span className="node-tag">{labels[node.kind]}</span>{content}</div>;
+  return <div className={`preview-node ${selected === node.id ? 'is-selected' : ''}${hidden ? ' is-hidden' : ''}${locked ? ' is-locked' : ''}`} style={hidden ? { opacity: 0.45 } : undefined} onClick={e => { e.stopPropagation(); if (!locked) select(node.id); }}><span className="node-tag">{locked ? 'locked · ' : ''}{hidden ? 'hidden · ' : ''}{labels[node.kind]}</span>{content}</div>;
 }
 
 function coerceInput(raw: string): string | number | boolean {
@@ -148,6 +151,20 @@ export default function App() {
   const [previewWidth, setPreviewWidth] = useState<number | null>(null);
   const [zoom, setZoom] = useState(100);
   const [showExport, setShowExport] = useState(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  function fitZoom() {
+    const canvas = canvasRef.current;
+    const art = artboard.current;
+    if (!canvas || !art) { setZoom(100); return; }
+    const avail = canvas.clientWidth - 60;
+    const cur = art.offsetWidth || avail;
+    const trueW = cur * (100 / zoom);
+    const target = previewWidth ?? trueW;
+    if (!target || target <= 0) { setZoom(100); return; }
+    const next = Math.max(25, Math.min(200, Math.round((avail / target) * 100)));
+    setZoom(next);
+    setNotice(`Zoom fit to ${next}%`);
+  }
   const input = useRef<HTMLInputElement>(null);
   const artboard = useRef<HTMLDivElement>(null);
   const [artboardWidth, setArtboardWidth] = useState(0);
@@ -433,6 +450,7 @@ export default function App() {
   }
   function moveSelected(delta: -1 | 1) {
     if (selected.id === activeRoot.id) return;
+    if (selected.props.locked === true) { setNotice(`${selected.label || labels[selected.kind]} is locked`); return; }
     const parent = parentOf(activeRoot, selected.id);
     if (!parent) return;
     const index = parent.children.findIndex(c => c.id === selected.id);
@@ -441,6 +459,7 @@ export default function App() {
   }
   function indentSelected() {
     if (selected.id === activeRoot.id) return;
+    if (selected.props.locked === true) { setNotice(`${selected.label || labels[selected.kind]} is locked`); return; }
     const parent = parentOf(activeRoot, selected.id);
     if (!parent) return;
     const index = parent.children.findIndex(c => c.id === selected.id);
@@ -451,6 +470,7 @@ export default function App() {
   }
   function outdentSelected() {
     if (selected.id === activeRoot.id) return;
+    if (selected.props.locked === true) { setNotice(`${selected.label || labels[selected.kind]} is locked`); return; }
     const parent = parentOf(activeRoot, selected.id);
     if (!parent || parent.id === activeRoot.id) { setNotice('Already at top level'); return; }
     const grandparent = parentOf(activeRoot, parent.id);
@@ -461,11 +481,13 @@ export default function App() {
   }
   function duplicateSelected() {
     if (selected.id === activeRoot.id) { setNotice('Cannot duplicate the root'); return; }
+    if (selected.props.locked === true) { setNotice(`${selected.label || labels[selected.kind]} is locked`); return; }
     changeTree(root => duplicateNode(root, selected.id));
     setNotice(`Duplicated ${selected.label || labels[selected.kind]}`);
   }
   function deleteSelected() {
     if (selected.id === activeRoot.id) { setNotice('Cannot delete the root'); return; }
+    if (selected.props.locked === true) { setNotice(`${selected.label || labels[selected.kind]} is locked`); return; }
     changeTree(root => remove(root, selected.id));
     setSelected(activeRoot.id);
     setNotice('Component deleted');
@@ -581,11 +603,11 @@ export default function App() {
     list.push(entry);
     groups.set(entry.category, list);
   }
-  return <NCTGraphiteLayoutShell className={`studio studio-theme-${studioTheme}`} header={topbar} footer={statusbar} columns="190px minmax(280px, 1fr)" wideMinWidth={801} wideColumns="244px minmax(300px, 1fr) 244px" gap={0}>
+  return <NCTGraphiteLayoutShell className={`studio studio-theme-${studioTheme}`} header={topbar} footer={statusbar} columns="190px minmax(280px, 1fr)" wideMinWidth={801} wideColumns="244px minmax(300px, 1fr) 244px" gap={0} style={{ height: '100dvh', overflow: 'hidden' }}>
       <aside className="sidebar left"><div className="sidebar-title">COMPONENTS <span>01</span></div><div className="sidebar-intro">Build from the structure up.<br /><span>Select a container, then add a component.</span></div>{[...groups].map(([category, entries]) => <NCTGraphiteAccordion key={category} title={category[0].toUpperCase() + category.slice(1)} defaultOpen={category === 'layout'}><NCTGraphitePanel variant="well"><div className="palette">{entries.map(e => <button key={e.kind} onClick={() => add(e.kind)} title={e.description}><span>{e.kind === 'text' ? 'T' : '▦'}</span>{labels[e.kind]}<b>+</b></button>)}</div></NCTGraphitePanel></NCTGraphiteAccordion>)}<div className="sidebar-title">MODULES <span>{String(project.modules.length).padStart(2, '0')}</span></div>{editingModule
         ? <div className="sidebar-intro">Editing <strong>{editingModule.name}</strong>.<br /><span>Changes update every instance.</span><br /><button className="primary" onClick={() => { setEditingModuleId(null); setSelected(project.root.id); setNotice('Back to app layout'); }} style={{ marginTop: 8 }}>Done editing</button></div>
         : <><div className="sidebar-intro"><span>Save components as reusable modules, then insert them anywhere.</span><br /><button onClick={saveAsModule} style={{ marginTop: 8 }}>Save selection as module</button></div><div className="tree">{project.modules.map(m => <div key={m.id} className={`tree-item ${selectedModuleDef?.id === m.id ? 'selected' : ''}`}><span className="tree-icon">▣</span>{m.name}<span className="tree-kind"><button onClick={() => insertModule(m.id)} title={`Insert ${m.name}`}>insert</button> <button onClick={() => { setEditingModuleId(m.id); setSelected(m.root.id); setNotice(`Editing ${m.name}`); }} title={`Edit ${m.name}`}>edit</button> <button onClick={() => deleteModule(m.id)} title={`Delete ${m.name}`}>✕</button></span></div>)}</div></>}</aside>
-      <main className="editor"><div className="editor-bar"><div><span className="eyebrow">{previewMode ? 'PREVIEW' : 'DESIGN'}</span><span className="bar-separator" /> <strong>{editingModule ? `Module: ${editingModule.name}` : 'Layout canvas'}</strong></div><div className="canvas-mode"><button className={previewMode ? 'primary' : ''} onClick={() => setPreviewMode(v => !v)} title="Toggle app preview with live state">{previewMode ? 'Exit preview' : 'Preview app'}</button><span className="preview-sizes" role="group" aria-label="Device preset">{DEVICE_PRESETS.map(d => <button key={d.id} className={previewWidth === d.width ? 'primary' : ''} onClick={() => { setPreviewWidth(d.width); setNotice(d.width == null ? 'Fluid preview' : `${d.label} preview · ${d.width}px`); }} title={d.width == null ? 'Fluid width' : `${d.label} · ${d.width}px viewport`} aria-pressed={previewWidth === d.width}>{d.label}{d.width != null ? ` ${d.width}` : ''}</button>)}</span><span className="preview-sizes" role="group" aria-label="Canvas zoom"><button onClick={() => setZoom(z => Math.max(50, z - 25))} title="Zoom out">−</button><button title="Canvas zoom" onClick={() => setZoom(100)}>{zoom}%</button><button onClick={() => setZoom(z => Math.min(200, z + 25))} title="Zoom in">+</button><button onClick={() => setZoom(100)} title="Reset zoom to 100%">Reset</button></span><span className="status-dot" /> LIVE PREVIEW</div></div>{banners}{previewMode && <div className="banner preview" role="status"><span>Previewing with {logic.state.length} state keys{previewOverrides && Object.keys(previewOverrides).length > 0 ? ` (${Object.keys(previewOverrides).length} overrides)` : ''}{commandLog.length > 0 ? ` — last command: ${commandLog[commandLog.length - 1]}` : ''}</span><span className="banner-actions">{logic.commands.map(c => <button key={c.id} onClick={() => setCommandLog(l => [...l.slice(-19), c.id])}>{c.label}</button>)}</span></div>}<div className="canvas"><div className="canvas-label"><span>{editingModule ? 'MODULE PREVIEW' : 'APP PREVIEW'}</span><span>RESPONSIVE LAYOUT</span></div><div ref={artboard} className={`artboard ${project.density}`} data-nct-density={project.density} data-device={DEVICE_PRESETS.find(d => d.width === previewWidth)?.id ?? 'fluid'} style={{ ...(previewWidth ? { maxWidth: previewWidth } : {}), zoom: zoom === 100 ? undefined : `${zoom}%` } as React.CSSProperties}><div className="artboard-header"><span className="artboard-dot" />{editingModule?.name ?? project.name}{previewWidth ? <span> · {previewWidth}px</span> : null}<span>•••</span></div><div className="artboard-body"><Preview node={activeRoot} modules={project.modules} selected={selectedId} select={setSelected} logic={previewMode ? logic : undefined} values={previewMode ? previewValues : undefined} onValue={(key, value) => setPreviewOverrides(o => ({ ...o, [key]: value }))} onCommand={id => setCommandLog(l => [...l.slice(-19), id])} widePreview={(artboardWidth || previewWidth || 0) >= 768} /></div></div><div className="canvas-help">Select a component on the canvas or in the document tree. Shortcuts: Delete removes selection · Ctrl/⌘+D duplicates · Ctrl/⌘+Z / Shift+Ctrl/⌘+Z undo/redo.</div></div><div className="editor-footer"><span>◈ &nbsp; {selected.kind === 'module' ? selectedModuleDef?.name ?? selected.label : selected.label || labels[selected.kind]} · {labels[selected.kind]} · {selected.children.length} children · {DEVICE_PRESETS.find(d => d.width === previewWidth)?.label ?? 'Fluid'}{previewWidth ? ` ${previewWidth}px` : ''} · {zoom}%</span><span>Tree-based composition</span></div></main>
+      <main className="editor"><div className="editor-bar"><div><span className="eyebrow">{previewMode ? 'PREVIEW' : 'DESIGN'}</span><span className="bar-separator" /> <strong>{editingModule ? `Module: ${editingModule.name}` : 'Layout canvas'}</strong></div><div className="canvas-mode"><button className={previewMode ? 'primary' : ''} onClick={() => setPreviewMode(v => !v)} title="Toggle app preview with live state">{previewMode ? 'Exit preview' : 'Preview app'}</button><span className="preview-sizes" role="group" aria-label="Device preset">{DEVICE_PRESETS.map(d => <button key={d.id} className={previewWidth === d.width ? 'primary' : ''} onClick={() => { setPreviewWidth(d.width); setNotice(d.width == null ? 'Fluid preview' : `${d.label} preview · ${d.width}px`); }} title={d.width == null ? 'Fluid width' : `${d.label} · ${d.width}px viewport`} aria-pressed={previewWidth === d.width}>{d.label}{d.width != null ? ` ${d.width}` : ''}</button>)}</span><span className="preview-sizes" role="group" aria-label="Canvas zoom"><button onClick={() => setZoom(z => Math.max(50, z - 25))} title="Zoom out">−</button><button title="Canvas zoom" onClick={() => setZoom(100)}>{zoom}%</button><button onClick={() => setZoom(z => Math.min(200, z + 25))} title="Zoom in">+</button><button onClick={fitZoom} title="Fit canvas to available width">Fit</button><button onClick={() => setZoom(100)} title="Reset zoom to 100%">Reset</button></span><span className="status-dot" /> LIVE PREVIEW</div></div>{banners}{previewMode && <div className="banner preview" role="status"><span>Previewing with {logic.state.length} state keys{previewOverrides && Object.keys(previewOverrides).length > 0 ? ` (${Object.keys(previewOverrides).length} overrides)` : ''}{commandLog.length > 0 ? ` — last command: ${commandLog[commandLog.length - 1]}` : ''}</span><span className="banner-actions">{logic.commands.map(c => <button key={c.id} onClick={() => setCommandLog(l => [...l.slice(-19), c.id])}>{c.label}</button>)}</span></div>}<div ref={canvasRef} className="canvas"><div className="canvas-label"><span>{editingModule ? 'MODULE PREVIEW' : 'APP PREVIEW'}</span><span>RESPONSIVE LAYOUT</span></div><div ref={artboard} className={`artboard ${project.density}`} data-nct-density={project.density} data-device={DEVICE_PRESETS.find(d => d.width === previewWidth)?.id ?? 'fluid'} style={{ ...(previewWidth ? { maxWidth: previewWidth } : {}), zoom: zoom === 100 ? undefined : `${zoom}%` } as React.CSSProperties}><div className="artboard-header"><span className="artboard-dot" />{editingModule?.name ?? project.name}{previewWidth ? <span> · {previewWidth}px</span> : null}<span>•••</span></div><div className="artboard-body"><Preview node={activeRoot} modules={project.modules} selected={selectedId} select={setSelected} logic={previewMode ? logic : undefined} values={previewMode ? previewValues : undefined} onValue={(key, value) => setPreviewOverrides(o => ({ ...o, [key]: value }))} onCommand={id => setCommandLog(l => [...l.slice(-19), id])} widePreview={(artboardWidth || previewWidth || 0) >= 768} /></div></div><div className="canvas-help">Select a component on the canvas or in the document tree. Shortcuts: Delete removes selection · Ctrl/⌘+D duplicates · Ctrl/⌘+Z / Shift+Ctrl/⌘+Z undo/redo.</div></div><div className="editor-footer"><span>◈ &nbsp; {selected.kind === 'module' ? selectedModuleDef?.name ?? selected.label : selected.label || labels[selected.kind]} · {labels[selected.kind]} · {selected.children.length} children · {DEVICE_PRESETS.find(d => d.width === previewWidth)?.label ?? 'Fluid'}{previewWidth ? ` ${previewWidth}px` : ''} · {zoom}%</span><span>Tree-based composition</span></div></main>
       <aside className="sidebar right"><div className="sidebar-title">INSPECTOR <span>02</span></div><div className="selection"><span className="selection-icon">◈</span><div><strong>{selected.kind === 'module' ? selectedModuleDef?.name ?? selected.label : selected.label || labels[selected.kind]}</strong><small>NCTGraphite {labels[selected.kind]}</small></div></div><NCTGraphiteAccordion title="Tree" defaultOpen><NCTGraphitePanel><div className="property tree-ops"><button onClick={() => moveSelected(-1)}>Move up</button><button onClick={() => moveSelected(1)}>Move down</button><button onClick={indentSelected}>Indent</button><button onClick={outdentSelected}>Outdent</button><button onClick={duplicateSelected}>Duplicate</button><button onClick={undo} disabled={past.length === 0}>Undo</button><button onClick={redo} disabled={future.length === 0}>Redo</button></div><div className="tree"><Tree node={activeRoot} modules={project.modules} selected={selectedId} select={setSelected} /></div></NCTGraphitePanel></NCTGraphiteAccordion>{selected.kind === 'module' && selectedModuleDef
         ? <NCTGraphiteAccordion title="Module instance" defaultOpen><NCTGraphitePanel><div className="property"><p>Instances reference {selectedModuleDef.name}. Editing the module updates every instance.</p></div><div className="property"><button onClick={() => { setEditingModuleId(selectedModuleDef.id); setSelected(selectedModuleDef.root.id); setNotice(`Editing ${selectedModuleDef.name}`); }}>Edit module</button></div></NCTGraphitePanel></NCTGraphiteAccordion>
         : <NCTGraphiteAccordion title="Properties" defaultOpen><div className="property"><label htmlFor="node-label">{selected.kind === 'text' ? 'TEXT' : 'LABEL'}</label><input id="node-label" value={selected.label} onChange={e => changeTree(root => update(root, selected.id, n => ({ ...n, label: e.target.value })))} /></div>{selectedEntry ? <div className="property"><label>TYPE</label><div className="readout">{selectedEntry.tag}</div><p>{selectedEntry.description}</p></div> : <div className="property"><label>TYPE</label><div className="readout">{labels[selected.kind]}</div></div>}{propNames.map(name => {

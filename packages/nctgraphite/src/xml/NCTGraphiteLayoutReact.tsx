@@ -57,6 +57,7 @@ export function NCTGraphiteLayoutView({
   modules: SavedLayoutModule[];
   seen?: Set<string>;
 }): React.ReactElement {
+  if (node.props.hidden === true) return <></>;
   const children = node.children.map((child) => (
     <NCTGraphiteLayoutView key={child.id} node={child} modules={modules} seen={seen} />
   ));
