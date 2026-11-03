@@ -23,6 +23,7 @@ const snapshot = (name = 'Test app') => ({
   views: { [project.PROJECT_MAIN_VIEW]: doc(name) },
   rawViews: {},
   extraFiles: {},
+  logic: lib.defaultAppLogic(),
 });
 
 test('manifest validation accepts v1 and names each problem', () => {
@@ -152,4 +153,42 @@ test('fingerprint drives dirty state: edits change it, clean saves keep it', () 
   const edited = snapshot();
   edited.views[project.PROJECT_MAIN_VIEW] = doc('Renamed');
   assert.notEqual(project.snapshotFingerprint(edited), clean);
+});
+
+test('binary and marker-prefixed text survive the storage and bundle representation', () => {
+  const bytes = Uint8Array.from([0, 255, 128, 13, 10, 42]);
+  const encoded = storage.encodeStoredBytes(bytes);
+  assert.deepEqual(storage.decodeStoredBytes(encoded), bytes);
+  const text = '\0NCTGraphite:file:base64:not-binary';
+  assert.deepEqual(storage.decodeStoredBytes(storage.encodeStoredBytes(new TextEncoder().encode(text))), new TextEncoder().encode(text));
+  const withAsset = { ...snapshot(), extraFiles: { 'assets/image.png': encoded } };
+  const reopened = project.decodeProjectBundle(project.encodeProjectBundle(withAsset));
+  assert.deepEqual(storage.decodeStoredBytes(reopened.extraFiles['assets/image.png']), bytes);
+});
+
+test('conflicts are checked before any project file is written', async () => {
+  const store = new storage.MemoryProjectStorage();
+  const revisions = await project.saveProjectToStorage(store, snapshot(), {});
+  const originalManifest = await store.readFile(project.PROJECT_MANIFEST_FILENAME);
+  store.tamper(project.PROJECT_MAIN_VIEW, 'external change');
+  const changed = snapshot('Changed');
+  await assert.rejects(project.saveProjectToStorage(store, changed, revisions), project.ProjectConflictError);
+  assert.equal((await store.readFile(project.PROJECT_MANIFEST_FILENAME)).content, originalManifest.content);
+  assert.equal((await store.readFile(project.PROJECT_MAIN_VIEW)).content, 'external change');
+});
+
+test('saving a copy does not overwrite an existing destination', async () => {
+  const store = new storage.MemoryProjectStorage({ [project.PROJECT_MAIN_VIEW]: 'existing file' });
+  await assert.rejects(project.saveProjectToStorage(store, snapshot(), {}), project.ProjectConflictError);
+  assert.equal((await store.readFile(project.PROJECT_MAIN_VIEW)).content, 'existing file');
+  await assert.rejects(store.readFile(project.PROJECT_MANIFEST_FILENAME));
+});
+
+test('overwriting one reviewed conflict does not overwrite another', async () => {
+  const store = new storage.MemoryProjectStorage();
+  const revisions = await project.saveProjectToStorage(store, snapshot(), {});
+  store.tamper(project.PROJECT_MANIFEST_FILENAME, 'external manifest');
+  store.tamper(project.PROJECT_MAIN_VIEW, 'external view');
+  await assert.rejects(project.saveProjectToStorage(store, snapshot('Changed'), revisions, { forcePaths: [project.PROJECT_MANIFEST_FILENAME] }), err => err.path === project.PROJECT_MAIN_VIEW);
+  assert.equal((await store.readFile(project.PROJECT_MANIFEST_FILENAME)).content, 'external manifest');
 });

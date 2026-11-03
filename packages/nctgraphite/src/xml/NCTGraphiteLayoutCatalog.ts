@@ -24,6 +24,11 @@ import { NCTGraphiteFaderMeta } from '../components/NCTGraphiteFader.js';
 import { NCTGraphiteDualRangeMeta } from '../components/NCTGraphiteDualRange.js';
 import { NCTGraphiteMeterMeta } from '../components/NCTGraphiteMeter.js';
 import { NCTGraphiteValueDisplayMeta } from '../components/NCTGraphiteValueDisplay.js';
+import { NCTGraphiteSliderMeta } from '../components/NCTGraphiteSlider.js';
+import { NCTGraphiteToggleMeta } from '../components/NCTGraphiteToggle.js';
+import { NCTGraphiteSegmentedMeta } from '../components/NCTGraphiteSegmented.js';
+import { NCTGraphitePanelMeta } from '../components/NCTGraphitePanel.js';
+import { NCTGraphiteToolbarMeta } from '../components/NCTGraphiteToolbar.js';
 import type { LayoutKind } from './NCTGraphiteLayoutDocument.js';
 
 export interface LayoutCatalogEntry {
@@ -58,6 +63,12 @@ const META_BY_KIND: { kind: LayoutKind; meta: NCTGraphiteComponentMeta }[] = [
   { kind: 'dualRange', meta: NCTGraphiteDualRangeMeta },
   { kind: 'meter', meta: NCTGraphiteMeterMeta },
   { kind: 'valueDisplay', meta: NCTGraphiteValueDisplayMeta },
+  { kind: 'slider', meta: NCTGraphiteSliderMeta },
+  { kind: 'toggle', meta: NCTGraphiteToggleMeta },
+  { kind: 'segmented', meta: NCTGraphiteSegmentedMeta },
+  { kind: 'panel', meta: NCTGraphitePanelMeta },
+  { kind: 'toolbar', meta: NCTGraphiteToolbarMeta },
+  { kind: 'iconButton', meta: NCTGraphiteButtonMeta },
   {
     kind: 'text',
     meta: {

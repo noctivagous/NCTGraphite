@@ -34,6 +34,8 @@ export function NCTGraphiteToolbar({
   return (
     <div
       className={className}
+      role="toolbar"
+      aria-orientation={orientation}
       style={{
         display: 'flex',
         flexDirection: orientation === 'horizontal' ? 'row' : 'column',

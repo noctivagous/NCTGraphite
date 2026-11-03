@@ -222,6 +222,27 @@ export {
   serializeLayoutDocument,
   parseLayoutDocument,
 } from './xml/NCTGraphiteLayoutXml.js';
+export {
+  APP_LOGIC_FORMAT,
+  APP_LOGIC_VERSION,
+  defaultAppLogic,
+  validateAppLogic,
+  migrateAppLogic,
+  parseAppLogicFile,
+  serializeAppLogic,
+  getBindingIssues,
+  resolvePreviewValues,
+  resolveNodeProp,
+} from './logic/NCTGraphiteAppLogic.js';
+export type {
+  AppStateType,
+  AppStateDef,
+  AppCommandDef,
+  AppBinding,
+  AppLogic,
+  BindingIssue,
+  PreviewValues,
+} from './logic/NCTGraphiteAppLogic.js';
 export { buildLayoutCatalog, editablePropsFor } from './xml/NCTGraphiteLayoutCatalog.js';
 export type { LayoutCatalogEntry } from './xml/NCTGraphiteLayoutCatalog.js';
 export { NCTGraphiteLayoutView, parseNCTOptionList } from './xml/NCTGraphiteLayoutReact.js';

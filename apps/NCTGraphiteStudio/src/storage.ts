@@ -63,6 +63,29 @@ export class MemoryProjectStorage implements StorageProvider {
   }
 }
 
+
+// Extra project files may be binary. Keep their bytes losslessly in the
+// string-based snapshot/bundle format; escape text that starts with the marker.
+const FILE_ENCODING_MARKER = '\u0000NCTGraphite:file:';
+export function encodeStoredBytes(bytes: Uint8Array): string {
+  try {
+    const text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+    return text.startsWith(FILE_ENCODING_MARKER) ? `${FILE_ENCODING_MARKER}text:${text}` : text;
+  } catch {
+    let binary = '';
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return `${FILE_ENCODING_MARKER}base64:${btoa(binary)}`;
+  }
+}
+export function decodeStoredBytes(content: string): Uint8Array {
+  if (content.startsWith(`${FILE_ENCODING_MARKER}text:`)) return new TextEncoder().encode(content.slice(`${FILE_ENCODING_MARKER}text:`.length));
+  if (content.startsWith(`${FILE_ENCODING_MARKER}base64:`)) {
+    const binary = atob(content.slice(`${FILE_ENCODING_MARKER}base64:`.length));
+    return Uint8Array.from(binary, char => char.charCodeAt(0));
+  }
+  return new TextEncoder().encode(content);
+}
+
 type PickerHost = {
   showDirectoryPicker?: (options?: { mode?: 'read' | 'readwrite' }) => Promise<FileSystemDirectoryHandle>;
 };
@@ -118,7 +141,7 @@ export class FileSystemProjectStorage implements StorageProvider {
       throw new Error(`File not found: ${path}`);
     }
     const file = await handle.getFile();
-    return { content: await file.text(), revision: `${file.lastModified}:${file.size}` };
+    return { content: encodeStoredBytes(new Uint8Array(await file.arrayBuffer())), revision: `${file.lastModified}:${file.size}` };
   }
 
   async writeFile(path: string, content: string, expectedRevision: string | null = null): Promise<string> {
@@ -137,7 +160,7 @@ export class FileSystemProjectStorage implements StorageProvider {
     const dir = await resolveDir(this.dir, path, true);
     const handle = await dir.getFileHandle(fileName(path), { create: true });
     const writable = await handle.createWritable();
-    await writable.write(content);
+    await writable.write(new Blob([decodeStoredBytes(content) as Uint8Array<ArrayBuffer>]));
     await writable.close();
     return (await this.readFile(path)).revision;
   }

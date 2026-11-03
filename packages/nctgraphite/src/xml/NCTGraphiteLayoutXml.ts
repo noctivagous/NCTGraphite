@@ -43,6 +43,12 @@ const KIND_TO_TAG: Record<LayoutKind, string> = {
   dualRange: 'NCTGraphiteDualRange',
   meter: 'NCTGraphiteMeter',
   valueDisplay: 'NCTGraphiteValueDisplay',
+  slider: 'NCTGraphiteSlider',
+  toggle: 'NCTGraphiteToggle',
+  segmented: 'NCTGraphiteSegmented',
+  panel: 'NCTGraphitePanel',
+  toolbar: 'NCTGraphiteToolbar',
+  iconButton: 'NCTGraphiteButton',
 };
 
 const TAG_TO_KIND: Record<string, LayoutKind> = {
@@ -70,6 +76,11 @@ const TAG_TO_KIND: Record<string, LayoutKind> = {
   NCTGraphiteDualRange: 'dualRange',
   NCTGraphiteMeter: 'meter',
   NCTGraphiteValueDisplay: 'valueDisplay',
+  NCTGraphiteSlider: 'slider',
+  NCTGraphiteToggle: 'toggle',
+  NCTGraphiteSegmented: 'segmented',
+  NCTGraphitePanel: 'panel',
+  NCTGraphiteToolbar: 'toolbar',
 };
 
 export function layoutTagFor(node: LayoutNode): string {
@@ -102,6 +113,7 @@ function nodeToXml(node: LayoutNode, indent: string): string {
   const tag = layoutTagFor(node);
   let attrs = ` id="${escapeAttr(node.id)}" label="${escapeAttr(node.label)}"`;
   if (node.kind === 'row') attrs += ' direction="row"';
+  if (node.kind === 'iconButton') attrs += ' iconButton="true"';
   if (node.kind === 'module' && node.moduleId) attrs += ` moduleId="${escapeAttr(node.moduleId)}"`;
   for (const [k, v] of Object.entries(node.props)) {
     if (node.kind === 'row' && k === 'direction') continue;
@@ -171,7 +183,7 @@ function parseElements(xml: string): XmlElement {
 function elementToNode(el: XmlElement): LayoutNode {
   let kind = TAG_TO_KIND[el.tag];
   if (!kind) throw new TypeError(`Unknown layout tag: ${el.tag}`);
-  const { id, label, moduleId, direction, ...rest } = el.attrs;
+  const { id, label, moduleId, direction, iconButton, ...rest } = el.attrs;
   if (!id) throw new TypeError(`Layout node <${el.tag}> is missing id`);
   const props: Record<string, LayoutPropValue> = {};
   const wide: Record<string, LayoutPropValue> = {};
@@ -185,6 +197,7 @@ function elementToNode(el: XmlElement): LayoutNode {
   } else if (direction !== undefined && kind !== 'stack') {
     throw new TypeError(`Unexpected direction on <${el.tag}>`);
   }
+  if (kind === 'button' && iconButton === 'true') kind = 'iconButton';
   if (kind === 'row') delete props.direction;
   const node: LayoutNode = {
     id: unescapeAttr(id),

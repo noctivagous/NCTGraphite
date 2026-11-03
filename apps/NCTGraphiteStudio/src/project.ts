@@ -5,9 +5,14 @@
  * and serializes with the XML codec in `@nct/nctgraphite`.
  */
 import {
+  defaultAppLogic,
+  migrateAppLogic,
+  parseAppLogicFile,
+  serializeAppLogic,
   parseLayoutDocument,
   serializeLayoutDocument,
   validLayoutDocument,
+  type AppLogic,
   type LayoutDocument,
 } from '@nct/nctgraphite';
 import type { StorageProvider } from './storage';
@@ -18,6 +23,7 @@ export const PROJECT_FORMAT = 'nctgraphite-project';
 export const PROJECT_VERSION = 1;
 export const PROJECT_MAIN_VIEW = 'views/main.nctgraphite.xml';
 export const PROJECT_VIEW_EXTENSION = '.nctgraphite.xml';
+export const PROJECT_LOGIC_PATH = 'logic/app.nctgraphite-logic.json';
 export const PROJECT_BUNDLE_FORMAT = 'nctgraphite-project-bundle';
 export const PROJECT_RECOVERY_KIND = 'nctgraphite-studio-recovery';
 
@@ -41,6 +47,8 @@ export interface ProjectSnapshot {
   rawViews: Record<string, string>;
   /** Files Studio does not understand; carried through untouched. */
   extraFiles: Record<string, string>;
+  /** Safe app-logic model (state, bindings, commands). Defaults when absent. */
+  logic: AppLogic;
 }
 
 export class ProjectConflictError extends Error {
@@ -172,9 +180,19 @@ export function openProjectSnapshot(files: Record<string, string>): ProjectSnaps
   }
   const extraFiles: Record<string, string> = {};
   for (const [path, content] of Object.entries(files)) {
-    if (path !== PROJECT_MANIFEST_FILENAME && !manifest.views.includes(path)) extraFiles[path] = content;
+    if (path !== PROJECT_MANIFEST_FILENAME && path !== PROJECT_LOGIC_PATH && !manifest.views.includes(path)) {
+      extraFiles[path] = content;
+    }
   }
-  return { manifest, views: { [manifest.entry]: entry }, rawViews, extraFiles };
+  let logic = defaultAppLogic();
+  if (files[PROJECT_LOGIC_PATH] !== undefined) {
+    try {
+      logic = parseAppLogicFile(files[PROJECT_LOGIC_PATH]);
+    } catch (err) {
+      throw new Error(`Invalid app logic ${PROJECT_LOGIC_PATH}: ${(err as Error).message}`);
+    }
+  }
+  return { manifest, views: { [manifest.entry]: entry }, rawViews, extraFiles, logic };
 }
 
 /** Flatten a snapshot to file contents. Key order is fixed so output is stable. */
@@ -201,7 +219,8 @@ export function snapshotToFiles(snapshot: ProjectSnapshot): Record<string, strin
     if (!doc) throw new Error(`Project is missing view ${path}`);
     files[path] = serializeLayoutDocument(doc);
   }
-  for (const path of Object.keys(snapshot.extraFiles).sort()) files[path] = snapshot.extraFiles[path];
+  files[PROJECT_LOGIC_PATH] = serializeAppLogic(snapshot.logic ?? defaultAppLogic());
+  for (const path of Object.keys(snapshot.extraFiles ?? {}).sort()) files[path] = snapshot.extraFiles[path];
   return files;
 }
 
@@ -236,22 +255,28 @@ export async function saveProjectToStorage(
   storage: StorageProvider,
   snapshot: ProjectSnapshot,
   revisions: Record<string, string>,
-  options: { force?: boolean } = {},
+  options: { force?: boolean; forcePaths?: readonly string[] } = {},
 ): Promise<Record<string, string>> {
   const files = snapshotToFiles(snapshot);
   const next: Record<string, string> = { ...revisions };
+  const pending: Array<{ path: string; content: string; expected: string | null }> = [];
+  // Check every destination before writing any file so an ordinary conflict
+  // does not leave a partially saved project.
   for (const [path, content] of Object.entries(files)) {
     let current: { content: string; revision: string } | null = null;
-    try {
-      current = await storage.readFile(path);
-    } catch {
-      current = null;
-    }
+    try { current = await storage.readFile(path); } catch { current = null; }
     if (current && current.content === content) {
       next[path] = current.revision;
       continue;
     }
-    next[path] = await storage.writeFile(path, content, options.force ? null : (revisions[path] ?? null));
+    const expected = options.force || options.forcePaths?.includes(path) ? null : (revisions[path] ?? '');
+    if (expected !== null && (current?.revision ?? '') !== expected) {
+      throw new ProjectConflictError(path, current?.revision ?? '');
+    }
+    pending.push({ path, content, expected });
+  }
+  for (const { path, content, expected } of pending) {
+    next[path] = await storage.writeFile(path, content, expected);
   }
   return next;
 }
@@ -325,11 +350,20 @@ export function decodeRecovery(text: string): RecoveryPayload {
       if (typeof value === 'string') extraFiles[key] = value;
     }
   }
+  let logic = defaultAppLogic();
+  if (raw.logic !== undefined) {
+    try {
+      logic = migrateAppLogic(raw.logic);
+    } catch {
+      throw new Error('Invalid recovery data: corrupt app logic');
+    }
+  }
   const snapshot: ProjectSnapshot = {
     manifest,
     views: raw.views as ProjectSnapshot['views'],
     rawViews,
     extraFiles,
+    logic,
   };
   return { kind: PROJECT_RECOVERY_KIND, version: 1, savedAt: String(data.savedAt ?? ''), snapshot };
 }

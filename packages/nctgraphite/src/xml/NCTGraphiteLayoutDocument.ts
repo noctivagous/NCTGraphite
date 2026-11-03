@@ -10,10 +10,11 @@ export const NCTGRAPHITE_LAYOUT_FILE_EXTENSION = 'nctgraphite.xml';
 export type LayoutKind =
   | 'stack' | 'row' | 'grid' | 'overlay' | 'accordion'
   | 'columns' | 'scene' | 'sceneItem' | 'layoutItem'
-  | 'text' | 'button' | 'module'
+  | 'text' | 'button' | 'iconButton' | 'module'
   | 'field' | 'textArea' | 'checkbox' | 'tabs' | 'list'
   | 'imageWell' | 'separator' | 'progress'
-  | 'knob' | 'fader' | 'dualRange' | 'meter' | 'valueDisplay';
+  | 'knob' | 'fader' | 'dualRange' | 'meter' | 'valueDisplay'
+  | 'slider' | 'toggle' | 'segmented' | 'panel' | 'toolbar';
 
 export type LayoutPropValue = string | number | boolean;
 
@@ -43,6 +44,7 @@ export interface LayoutDocument {
 
 export const layoutContainers: LayoutKind[] = [
   'stack', 'row', 'grid', 'overlay', 'accordion', 'columns', 'scene', 'sceneItem', 'layoutItem',
+  'panel', 'toolbar',
 ];
 
 export const layoutKindLabels: Record<LayoutKind, string> = {
@@ -57,6 +59,7 @@ export const layoutKindLabels: Record<LayoutKind, string> = {
   layoutItem: 'Layout item',
   text: 'Text',
   button: 'Button',
+  iconButton: 'Icon button',
   module: 'Module',
   field: 'Text field',
   textArea: 'Text area',
@@ -71,6 +74,11 @@ export const layoutKindLabels: Record<LayoutKind, string> = {
   dualRange: 'Dual range',
   meter: 'Meter',
   valueDisplay: 'Value display',
+  slider: 'Slider',
+  toggle: 'Toggle',
+  segmented: 'Segmented control',
+  panel: 'Panel',
+  toolbar: 'Toolbar',
 };
 
 function freshId(): string {

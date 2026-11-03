@@ -43,14 +43,62 @@ See [PROJECT-FORMAT.md](PROJECT-FORMAT.md) for the proposed project model.
 
 ## App building
 
-- [ ] Define safe state, binding, command, and app-logic models.
-- [ ] Add editing and inspection for app logic and bindings.
-- [ ] Design an AI agent integration that can inspect and modify app documents.
-- [ ] Add app preview and export workflows.
-- [ ] Make the Studio itself themeable using NCTGraphite.
+- [x] Define safe state, binding, command, and app-logic models.
+- [x] Add editing and inspection for app logic and bindings.
+- [x] Design an AI agent integration that can inspect and modify app documents, such as tool calls.
+- [x] Add app preview and export workflows.
+- [x] Make the Studio itself themeable using NCTGraphite.
 
 ## Quality
 
 - [ ] Add tests for document operations, validation, and persistence.
 - [ ] Test keyboard navigation and accessibility across the builder and controls.
 - [ ] Verify responsive behavior and visual layout in the browser.
+
+## Proshade builder gaps
+
+Compared with `web-artifacts/Proshade+Gui+Builder+Late/App.tsx`, Studio has a
+palette, tree operations, inspector, and preview, but it does not yet provide
+Proshade's direct canvas-editing workflow. Keep structural stack/grid layouts
+as the default; use coordinate-based manipulation within scene layouts. The
+reference includes some illustrative controls, so implement and test their
+intended behavior rather than assuming every reference control is functional.
+
+### Canvas editing
+
+- [ ] Drag palette items onto a canvas, show a drag preview and a valid drop target, and insert them at the appropriate tree position or into a scene at the drop coordinates; retain a keyboard-accessible insertion path.
+- [ ] Select and hover objects directly on the canvas with clear bounds and handles, including nested containers, without changing their layout or blocking control interactions in preview mode.
+- [ ] Move and resize scene items with pointer handles, parent-relative coordinates, zoom-corrected pointer movement, minimum dimensions, and one undo step per gesture.
+- [ ] Support canvas-based nesting and reparenting with correct coordinates, prevent invalid parent/child relationships and cycles, and retain tree-based alternatives for stack and grid layouts.
+- [ ] Add canvas zoom controls, percentage readout, fit/reset, and scrolling or panning; keep selection and pointer operations accurate at each zoom.
+- [ ] Add independent grid visibility and snapping controls, configurable spacing, visible guides, and predictable snapping during placement, movement, and resize.
+- [x] Add keyboard delete and duplicate shortcuts, focus-safe handling for text inputs, and accessible alternatives for moving and resizing.
+
+### Device layouts and inspector
+
+- [x] Provide desktop, tablet, and phone preview presets with actual viewport dimensions, device frames, and a clear active-device indicator; keep fluid and custom-size previews.
+- [ ] Define shared versus per-device or breakpoint-specific layouts, persist overrides, show which properties are overridden, and allow reverting to inherited values.
+- [x] Add a geometry inspector for scene-item position and size with units, validation, and two-way synchronization with canvas manipulation.
+- [ ] Implement editable edge constraints/pinning and resizing behavior across viewport sizes, with clear inherited and overridden states; Proshade's pinning controls are illustrative.
+- [ ] Provide an appearance inspector for the supported widget properties, including variants, opacity, corner radius, typography and color where applicable, with theme-aware defaults.
+- [ ] Expand the layers/tree panel with hierarchy, selection, ordering, useful dimensions and object counts; add functional visibility and locking if supported by the document model.
+
+### Components and workspace
+
+- [x] Close palette gaps for Proshade's slider, toggle, segmented control, icon button, panel/container, and toolbar strip; expose existing library widgets through the document catalog, inspector, and renderer where appropriate.
+- [ ] Complete property editing and preview behavior for Proshade controls, including tab and list contents, selected values, field placeholders, button styles, and image wells.
+- [ ] Organize the workspace around a compact palette, canvas, layers and inspector with readable type hierarchy; keep the layout and density themeable instead of imposing the Proshade style on built apps.
+- [x] Add a useful canvas status/selection readout and an export inspection flow showing the actual serialized layout; keep runnable app export as a separate task.
+- [ ] Test the end-to-end workflows: drag, nest, select, edit, resize, undo, device overrides, save/reopen, and keyboard alternatives. Verify visual fidelity and usability separately when browser testing is authorized.
+
+## Follow-up from builder review
+
+- [ ] Implement a runnable app export using the shared renderer, logic runtime, and required assets; the current export button is disabled until this exists.
+- [ ] Make design selection wrappers preserve grid-item placement, scene coordinates, overlay layers, and flex sizing; compare Studio preview against the shared renderer.
+- [ ] Complete preview interaction for unbound controlled controls, dual ranges, and image wells; support editing typed state defaults and validate binding types and command targets.
+- [ ] Include logic edits in undo/redo and handle orphaned bindings when nodes are deleted or duplicated.
+- [ ] Support multiple responsive breakpoints and container-based preview widths in both Studio and the runtime renderer; replace the current fixed 768px wide breakpoint.
+- [ ] Make project writes transactional or recoverable on I/O failure, and strengthen revision detection beyond file modification time and size.
+- [ ] Avoid recursively loading generated directories and large dependencies when opening a project; preserve unknown files and binary assets without requiring them all in memory.
+- [ ] Validate project paths and bundle versions, and reject malformed data without silently dropping manifest or logic fields.
+- [ ] Add interaction tests covering preview bindings, recovery, Save As, modules, keyboard use, and responsive behavior; visually verify in a browser when requested.
