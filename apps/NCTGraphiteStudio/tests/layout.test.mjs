@@ -1,5 +1,6 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
@@ -99,6 +100,14 @@ test('splitter stacks vertically with a default even split', () => {
   assert.match(html, /flex-direction:column/);
   assert.equal((html.match(/flex:0 0 33\.333/g) || []).length, 3);
   assert.match(html, /aria-orientation="horizontal"/);
+});
+test('density sheet defines the compact/comfortable contract without colors or fonts', () => {
+  const css = readFileSync(new URL('../../../packages/nctgraphite/src/theme/NCTGraphiteDensity.css', import.meta.url), 'utf8');
+  assert.match(css, /\[data-nct-density='comfortable'\]/);
+  for (const token of ['--nct-content-gap', '--nct-content-padding', '--nct-panel-padding', '--nct-panel-radius']) {
+    assert.ok(css.includes(token), `missing ${token}`);
+  }
+  assert.doesNotMatch(css, /#[0-9a-f]{3,6}/i); assert.doesNotMatch(css, /font-family/);
 });
 test('app shell wraps body regions with per-region styling', () => {
   const html = render(NCTGraphiteAppShell, { sectionCount: 2, sectionClassName: ['left', 'right'], sectionStyle: [{ order: 0 }, { order: 1 }] }, 'A', 'B');
