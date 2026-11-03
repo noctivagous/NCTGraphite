@@ -24,6 +24,14 @@ export const NCTGraphiteGridMeta: NCTGraphiteComponentMeta = {
     rows: { type: 'string', default: 'auto', description: 'Grid template rows (grid-template-rows)' },
     gap: { type: ['number', 'string'], default: 0, description: 'Gap between items (px number or CSS value)' },
     template: { type: 'string', required: false, description: 'Full grid-template shorthand (overrides columns/rows)' },
+    autoFlow: { type: 'string', required: false, description: 'Placement direction for implicit grid items' },
+    autoRows: { type: 'string', required: false, description: 'Size of implicit rows' },
+    autoColumns: { type: 'string', required: false, description: 'Size of implicit columns' },
+    align: { type: 'string', required: false, description: 'Cross-axis alignment of grid items' },
+    justify: { type: 'string', required: false, description: 'Inline-axis alignment of grid items' },
+    alignContent: { type: 'string', required: false, description: 'Distribution of grid tracks on the block axis (align-content)' },
+    justifyContent: { type: 'string', required: false, description: 'Distribution of grid tracks on the inline axis (justify-content)' },
+    padding: { type: ['number', 'string'], required: false, description: 'Inner spacing (px number or CSS value)' },
     wideMinWidth: { type: 'number', required: false, description: 'Viewport px at which the wide* variants apply (matchMedia)' },
     wideColumns: { type: 'string', required: false, description: 'grid-template-columns at/above wideMinWidth' },
     wideRows: { type: 'string', required: false, description: 'grid-template-rows at/above wideMinWidth' },
@@ -41,6 +49,14 @@ export interface NCTGraphiteGridProps {
   rows?: string;
   gap?: number | string;
   template?: string;
+  autoFlow?: CSSProperties['gridAutoFlow'];
+  autoRows?: CSSProperties['gridAutoRows'];
+  autoColumns?: CSSProperties['gridAutoColumns'];
+  align?: CSSProperties['alignItems'];
+  justify?: CSSProperties['justifyItems'];
+  alignContent?: CSSProperties['alignContent'];
+  justifyContent?: CSSProperties['justifyContent'];
+  padding?: number | string;
   wideMinWidth?: number;
   wideColumns?: string;
   wideRows?: string;
@@ -53,7 +69,8 @@ export interface NCTGraphiteGridProps {
 
 /** CSS Grid with deterministic columns/rows/gap, plus optional wide-viewport variants. */
 export function NCTGraphiteGrid({
-  columns = '1fr', rows = 'auto', gap = 0, template,
+  columns = '1fr', rows = 'auto', gap = 0, template, autoFlow, autoRows, autoColumns, align, justify,
+  alignContent, justifyContent, padding,
   wideMinWidth, wideColumns, wideRows, wideGap, wideTemplate,
   className = '', style, children,
 }: NCTGraphiteGridProps) {
@@ -70,6 +87,10 @@ export function NCTGraphiteGrid({
       className={className}
       style={{
         display: 'grid',
+        gridAutoFlow: autoFlow, gridAutoRows: autoRows, gridAutoColumns: autoColumns,
+        alignItems: align, justifyItems: justify,
+        alignContent, justifyContent,
+        padding: typeof padding === 'number' ? `${padding}px` : padding,
         ...(effTemplate && !templateIsColumns
           ? { gridTemplate: effTemplate }
           : {
