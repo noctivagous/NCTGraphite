@@ -12,6 +12,7 @@ export const NCTGraphiteCommandsMeta: NCTGraphiteComponentMeta = {
     onKeyUp: { type: 'function', required: false, description: '(key) => void on every key release' },
     onRebind: { type: 'function', required: false, description: '(id, key) => void after a shortcut is rebound' },
     ignoreInputs: { type: 'boolean', default: false, description: 'Skip shortcuts while typing in inputs' },
+    enabled: { type: 'boolean', default: true, description: 'Enable keyboard handling for this command scope' },
     preventDefaultKeys: { type: 'array', required: false, description: 'Keys to preventDefault when they trigger a command' },
   },
   emits: ['action'],
@@ -32,6 +33,7 @@ export interface NCTGraphiteCommandsOptions {
   onKeyUp?: (key: string) => void;
   onRebind?: (id: string, key: string) => void;
   ignoreInputs?: boolean;
+  enabled?: boolean;
   preventDefaultKeys?: string[];
 }
 
@@ -50,7 +52,7 @@ export interface NCTGraphiteCommands {
  * Key-to-action resolution runs through a ref mirror so window listeners
  * never close over stale state. Discrete invocations fan out to onAction.
  */
-export function useNCTGraphiteCommands({ commands, onAction, onKeyUp, onRebind, ignoreInputs = false, preventDefaultKeys = [] }: NCTGraphiteCommandsOptions): NCTGraphiteCommands {
+export function useNCTGraphiteCommands({ commands, onAction, onKeyUp, onRebind, ignoreInputs = false, enabled = true, preventDefaultKeys = [] }: NCTGraphiteCommandsOptions): NCTGraphiteCommands {
   const [keyMap, setKeyMap] = useState<Record<string, string>>(() =>
     Object.fromEntries(commands.map((c) => [c.id, c.defaultKey]))
   );
@@ -96,6 +98,17 @@ export function useNCTGraphiteCommands({ commands, onAction, onKeyUp, onRebind, 
   }, []);
 
   useEffect(() => {
+    const clearHeld = () => {
+      if (heldRef.current.size) {
+        heldRef.current.clear();
+        setHeldActions(new Set());
+      }
+    };
+    if (!enabled) {
+      clearHeld();
+      setRebinding(null);
+      return;
+    }
     const match = (key: string): string[] => {
       const found: string[] = [];
       for (const [action, mapped] of Object.entries(keyMapRef.current)) {
@@ -139,11 +152,13 @@ export function useNCTGraphiteCommands({ commands, onAction, onKeyUp, onRebind, 
     };
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', clearHeld);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', clearHeld);
     };
-  }, [invoke]);
+  }, [invoke, enabled, ignoreInputs]);
 
   return { keyMap, heldActions, rebinding, beginRebind, invoke };
 }

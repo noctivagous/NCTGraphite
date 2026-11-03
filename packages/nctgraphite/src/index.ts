@@ -1,5 +1,21 @@
 export const NCTGRAPHITE_VERSION = "0.0.0";
 
+export { NCTParameterPanel, useNCTParameters } from './parameters/NCTGraphiteParameters.js';
+export type { NCTParameterDefinition, NCTParameterValues } from './parameters/NCTGraphiteParameters.js';
+
+export { fitDocumentToViewport, documentToViewport, viewportToDocument } from './grid/NCTGraphiteViewport.js';
+export type { NCTGraphiteViewportTransform, NCTGraphiteViewportSize, NCTGraphiteViewportPoint } from './grid/NCTGraphiteViewport.js';
+
+export {
+  gridCell, gridCellBounds, gridCellCorners, gridCellId, gridCellsInBounds,
+  gridCoordinateToPoint, gridNeighbors, pointInGridCell, pointInPolygon,
+  pointToFractionalGridCoordinate, pointToGridCoordinate, roundHexCoordinate,
+} from './grid/NCTGraphiteGridGeometry.js';
+export type {
+  NCTGraphiteGridBounds, NCTGraphiteGridCell, NCTGraphiteGridCoordinate,
+  NCTGraphiteGridKind, NCTGraphiteGridSpec, NCTGraphitePoint,
+} from './grid/NCTGraphiteGridGeometry.js';
+
 export type { NCTGraphiteComponentMeta, NCTGraphitePropMeta } from './components/NCTGraphiteMeta.js';
 
 export { NCTGraphiteSlider, NCTGraphiteSliderMeta } from './components/NCTGraphiteSlider.js';
