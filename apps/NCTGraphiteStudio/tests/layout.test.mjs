@@ -7,7 +7,7 @@ import { createServer } from 'vite';
 
 const server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom' });
 after(() => server.close());
-const { NCTGraphiteStack, NCTGraphiteGrid, NCTGraphiteOverlay, NCTGraphiteAccordion, NCTGraphiteToolbar, NCTGraphiteScene, NCTGraphiteSceneItem, NCTGraphiteLayoutItem, NCTGraphiteColumns, NCTGraphiteLayoutShell, NCTGraphiteBaseline, NCTGraphitePanel, NCTGraphiteSplitter, NCTGraphiteAppShell, shiftPaneSizes } = await server.ssrLoadModule('../../packages/nctgraphite/src/index.ts');
+const { NCTGraphiteStack, NCTGraphiteGrid, NCTGraphiteOverlay, NCTGraphiteAccordion, NCTGraphiteToolbar, NCTGraphiteScene, NCTGraphiteSceneItem, NCTGraphiteLayoutItem, NCTGraphiteColumns, NCTGraphiteLayoutShell, NCTGraphiteBaseline, NCTGraphitePanel, NCTGraphiteSplitter, NCTGraphiteAppShell, shiftPaneSizes, NCTGraphiteColumnGuides } = await server.ssrLoadModule('../../packages/nctgraphite/src/index.ts');
 const render = (component, props, ...children) => renderToStaticMarkup(React.createElement(component, props, ...children));
 
 test('stack composes a wrapping row with baseline alignment', () => {
@@ -119,6 +119,21 @@ test('splitter resize conserves space and respects the minimum', () => {
   close(capped[0], 0.9); close(capped[1], 0.1);
   const total = shiftPaneSizes([0.2, 0.3, 0.5], 1, 0.05, 0.1).reduce((a, b) => a + b, 0);
   close(total, 1);
+});
+test('column guides mirror the content grid without affecting layout', () => {
+  const html = render(NCTGraphiteColumnGuides, { columns: 'repeat(6, 1fr)', gap: 24, count: 6, columnColor: 'blue', gutterColor: 'red' });
+  assert.match(html, /grid-template-columns:repeat\(6, 1fr\)/); assert.match(html, /gap:24px/);
+  assert.match(html, /background:red/); assert.match(html, /aria-hidden="true"/);
+  assert.equal((html.match(/background:blue/g) || []).length, 6);
+  assert.doesNotMatch(html, /position:absolute/);
+});
+test('print recipe layers content, column guides, and baseline in order', () => {
+  const html = render(NCTGraphiteOverlay, { align: 'stretch' },
+    React.createElement(NCTGraphiteGrid, { key: 'c', columns: 'repeat(6, 1fr)', gap: 24 }, 'Text'),
+    React.createElement(NCTGraphiteColumnGuides, { key: 'g', columns: 'repeat(6, 1fr)', gap: 24, count: 6 }),
+    React.createElement(NCTGraphiteBaseline, { key: 'b', line: 16 }));
+  assert.ok(html.indexOf('Text') < html.indexOf('repeating-linear-gradient'));
+  assert.equal((html.match(/grid-area:1 \/ 1/g) || []).length, 3);
 });
 test('layout shell forwards breakpoints to its body grid', () => {
   const html = render(NCTGraphiteLayoutShell, { columns: '1fr', breakpoints: [{ minWidth: 900, columns: '200px 1fr' }] }, 'Body');
