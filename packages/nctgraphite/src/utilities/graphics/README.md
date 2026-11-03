@@ -8,7 +8,7 @@ a named module; apps own layer schemas, brush routing, and drawing.
 | `hull.ts` | Convex hull, shared-edge clustering, perimeter loops, Chaikin smooth |
 | `metaballField.ts` | Inverse-square field, d3-contour iso-paths, Perlin stamp noise |
 | `satoNeck.ts` | Sato/Paper.js metaball necks and round-rect stamps |
-| `vectorField.ts` | Sample lattice, seek/velocity/swirl stamps, attractors, angle→hue style |
+| `vectorField.ts` | Sample lattice, `VECTOR_BRUSH_OPS` stamps, attractors, angle→hue style |
 | `sampleLattice.ts` | Edge-aligned sample points, jitter, shading falloff, gain stamps |
 
 Modes call these with polygons, blobs, or samples. They do not import layer
