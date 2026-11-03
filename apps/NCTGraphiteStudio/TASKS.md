@@ -77,7 +77,7 @@ intended behavior rather than assuming every reference control is functional.
 ### Device layouts and inspector
 
 - [x] Provide desktop, tablet, and phone preview presets with actual viewport dimensions, device frames, and a clear active-device indicator; keep fluid and custom-size previews.
-- [ ] Define shared versus per-device or breakpoint-specific layouts, persist overrides, show which properties are overridden, and allow reverting to inherited values.
+- [x] Define shared versus per-device or breakpoint-specific layouts, persist overrides, show which properties are overridden, and allow reverting to inherited values.
 - [x] Add a geometry inspector for scene-item position and size with units, validation, and two-way synchronization with canvas manipulation.
 - [ ] Implement editable edge constraints/pinning and resizing behavior across viewport sizes, with clear inherited and overridden states; Proshade's pinning controls are illustrative.
 - [ ] Provide an appearance inspector for the supported widget properties, including variants, opacity, corner radius, typography and color where applicable, with theme-aware defaults.

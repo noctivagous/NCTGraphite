@@ -1,5 +1,6 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createServer } from 'vite';
 
 const server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom' });
@@ -97,9 +98,29 @@ test('calculator starter is a valid bound scene with bound display logic', async
   assert.equal(project.root.kind, 'scene');
   const display = lib.findLayoutNode(project.root, 'display');
   assert.equal(display?.kind, 'valueDisplay');
+  assert.equal(project.root.props.width, 320);
+  assert.equal(project.root.props.height, 440);
   const logic = starter.starterLogic();
   assert.deepEqual(lib.validateAppLogic(logic), []);
   assert.equal(lib.getBindingIssues(project, logic).length, 0);
+});
+
+test('wide scene geometry overrides persist and revert to base', () => {
+  const node = { id: 's', kind: 'sceneItem', label: 'S', props: { left: 16, top: 16, width: 100, height: 50 }, wide: { left: 32, width: 200 }, children: [] };
+  const xml = lib.serializeLayoutDocument({ name: 'D', density: 'compact', modules: [], root: { id: 'r', kind: 'scene', label: 'R', props: {}, children: [node] } });
+  assert.match(xml, /wide-left="32"/);
+  assert.match(xml, /wide-width="200"/);
+  const back = lib.parseLayoutDocument(xml);
+  assert.deepEqual(lib.findLayoutNode(back.root, 's').wide, { left: 32, width: 200 });
+  const reverted = lib.updateLayoutNode(back.root, 's', (n) => { const next = { ...n }; delete next.wide; return next; });
+  assert.equal(lib.findLayoutNode(reverted, 's').wide, undefined);
+  assert.equal(lib.validLayoutDocument({ name: 'D', density: 'compact', modules: [], root: reverted }), true);
+});
+
+test('scene styles keep item wrappers pass-through and children filling frames', () => {
+  const css = readFileSync(new URL('../src/studio.css', import.meta.url), 'utf8');
+  assert.match(css, /\.preview-node\[data-kind="scene"\][\s\S]*?position:\s*static/);
+  assert.match(css, /\.preview-node\[data-kind="sceneItem"\][\s\S]*?width:\s*100%/);
 });
 
 test('canvas reparent keeps documents valid and refuses cycles', () => {

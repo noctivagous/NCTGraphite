@@ -138,7 +138,18 @@ export function Preview({ node, modules, selected, select, logic, values, onValu
     case 'accordion': content = <NCTGraphiteAccordion title={node.label} defaultOpen {...node.props}>{children}</NCTGraphiteAccordion>; break;
     case 'columns': content = <NCTGraphiteColumns {...node.props}>{children}</NCTGraphiteColumns>; break;
     case 'scene': content = <NCTGraphiteScene {...node.props}>{children}</NCTGraphiteScene>; break;
-    case 'sceneItem': content = <NCTGraphiteSceneItem {...node.props}>{children}</NCTGraphiteSceneItem>; break;
+    case 'sceneItem': {
+      const wideGeo: Record<string, string | number> = {};
+      if (widePreview) {
+        const len = (v: unknown) => typeof v === 'string' || typeof v === 'number' ? v : undefined;
+        for (const k of ['left', 'top', 'right', 'bottom', 'width', 'height'] as const) {
+          const v = len(node.wide?.[k]);
+          if (v !== undefined) wideGeo[k] = v;
+        }
+        if (typeof node.wide?.zIndex === 'number') wideGeo.zIndex = node.wide.zIndex;
+      }
+      content = <NCTGraphiteSceneItem {...node.props} {...wideGeo}>{children}</NCTGraphiteSceneItem>; break;
+    }
     case 'layoutItem': content = <NCTGraphiteLayoutItem {...node.props}>{children}</NCTGraphiteLayoutItem>; break;
     case 'text': content = <span className="preview-text">{logic && values ? String(resolveNodeProp(node, logic, values)) : node.label}</span>; break;
     case 'button': content = <NCTGraphiteButton label={logic && values ? String(resolveNodeProp(node, logic, values)) : node.label} {...node.props} onClick={command ? () => onCommand?.(command) : undefined} />; break;

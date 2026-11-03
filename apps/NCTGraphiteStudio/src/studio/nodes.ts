@@ -1,4 +1,5 @@
 import { GRID_DEFAULT_COLUMNS } from './constants';
+import { containers, find, labels, moveNode, remove, update, wrapInSceneItem } from '../model';
 import type { Kind, Node } from '../model';
 
 export function defaultsFor(kind: Kind): Node['props'] {
@@ -30,4 +31,59 @@ export function coerceInput(raw: string): string | number | boolean {
   if (raw === 'false') return false;
   if (/^-?\d+(\.\d+)?$/.test(raw.trim()) && raw.trim() !== '') return Number(raw);
   return raw;
+}
+
+export type DropZone = 'before' | 'inside' | 'after';
+
+export type ReparentResult =
+  | { root: Node; placedId: string; note: string }
+  | { error: string };
+
+function lockNote(n: Node): string {
+  return `${n.label || labels[n.kind]} is locked`;
+}
+
+/** Move a node to a before/inside/after drop position in one edit.
+ * Used by both canvas and tree drops so the guards stay identical. */
+export function reparentNode(root: Node, nodeId: string, targetId: string, zone: DropZone, pos?: { x: number; y: number }): ReparentResult {
+  const node = find(root, nodeId);
+  const target = find(root, targetId);
+  if (!node || !target) return { error: 'Drop onto a container to reparent' };
+  if (nodeId === root.id) return { error: 'Cannot move the root' };
+  if (nodeId === targetId) return { error: '' };
+  if (node.props.locked === true) return { error: lockNote(node) };
+  if (find(node, targetId)) return { error: 'Cannot move into itself' };
+  const name = node.label || labels[node.kind];
+  if (zone === 'inside') {
+    if (!containers.includes(target.kind)) return { error: 'Drop onto a container to reparent' };
+    if (target.props.locked === true) return { error: lockNote(target) };
+    if (target.kind === 'scene' && node.kind !== 'sceneItem') {
+      const placed = wrapInSceneItem({ ...node }, pos?.x ?? 0, pos?.y ?? 0);
+      return {
+        root: update(remove(root, nodeId), targetId, n => ({ ...n, children: [...n.children, placed] })),
+        placedId: placed.children[0].id,
+        note: `Moved ${name} into scene`,
+      };
+    }
+    return {
+      root: moveNode(root, nodeId, targetId, target.children.length),
+      placedId: nodeId,
+      note: `Moved ${name} into ${target.label || labels[target.kind]}`,
+    };
+  }
+  const parent = parentOf(root, targetId);
+  if (!parent) return { error: 'Cannot reorder here' };
+  if (parent.props.locked === true) return { error: lockNote(parent) };
+  const without = remove(root, nodeId);
+  const p = find(without, parent.id);
+  if (!p) return { error: 'Cannot reorder here' };
+  const ti = p.children.findIndex(c => c.id === targetId);
+  if (ti < 0) return { error: 'Cannot reorder here' };
+  const at = zone === 'after' ? ti + 1 : ti;
+  const moved = { ...node };
+  return {
+    root: update(without, parent.id, pp => ({ ...pp, children: [...pp.children.slice(0, at), moved, ...pp.children.slice(at)] })),
+    placedId: nodeId,
+    note: `Moved ${name}`,
+  };
 }
