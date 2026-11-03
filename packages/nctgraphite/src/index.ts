@@ -111,6 +111,9 @@ export type { NCTGraphiteGridProps } from './components/NCTGraphiteGrid.js';
 export { NCTGraphiteToolbar, NCTGraphiteToolbarMeta } from './components/NCTGraphiteToolbar.js';
 export type { NCTGraphiteToolbarProps } from './components/NCTGraphiteToolbar.js';
 
+export { NCTGraphiteMenuBar, NCTGraphiteMenuBarMeta, NCTGraphiteMenu, NCTGraphiteMenuMeta, NCTGraphiteMenuItem, NCTGraphiteMenuItemMeta } from './components/NCTGraphiteMenuBar.js';
+export type { NCTGraphiteMenuBarProps, NCTGraphiteMenuProps, NCTGraphiteMenuItemProps } from './components/NCTGraphiteMenuBar.js';
+
 export {
   useNCTGraphiteCommands, NCTGraphiteCommandsMeta,
 } from './bindings/NCTGraphiteCommands.js';
