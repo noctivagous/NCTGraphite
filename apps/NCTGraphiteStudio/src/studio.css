@@ -19,3 +19,4 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 .tree-ops { display: flex; flex-wrap: wrap; gap: 5px; }
 .tree-ops button { border: 1px solid #101114; background: #2c2f34; border-radius: 3px; color: #c7cdd5; padding: 5px 8px; font-size: 10px; }
 .tree-ops button:disabled { opacity: .4; cursor: default; }
+.banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 17px; font-size: 12px; color: #dfe4ea; border-bottom: 1px solid #101114; }.banner.recovery { background: #2e3a4e; }.banner.conflict { background: #4e2e2e; }.banner-actions { display: flex; gap: 7px; }.banner-actions button { border: 1px solid #0c0e11; background: #2c2f34; border-radius: 3px; color: #d6dae0; padding: 5px 10px; font-size: 11px; }

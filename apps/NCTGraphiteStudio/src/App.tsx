@@ -2,6 +2,26 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { NCTGraphiteAccordion, NCTGraphiteButton, NCTGraphiteColumns, NCTGraphiteGrid, NCTGraphiteLayoutItem, NCTGraphiteLayoutShell, NCTGraphiteOverlay, NCTGraphitePanel, NCTGraphiteScene, NCTGraphiteSceneItem, NCTGraphiteStack, NCTGraphiteToolbar } from '@nct/nctgraphite';
 import { buildLayoutCatalog, editablePropsFor, parseLayoutDocument, serializeLayoutDocument } from '@nct/nctgraphite';
 import { cloneWithIds, containers, duplicateNode, find, instantiateModule, labels, makeNode, moveNode, remove, removeModuleRefs, update, validDocument, validModule, validNode, migrateLegacyStudioProject, type Kind, type Node, type Project, type SavedModule } from './model';
+import {
+  ProjectConflictError,
+  decodeProjectBundle,
+  decodeRecovery,
+  defaultManifest,
+  encodeProjectBundle,
+  encodeRecovery,
+  openProjectFromStorage,
+  saveProjectToStorage,
+  snapshotFingerprint,
+  type OpenedProject,
+  type ProjectManifest,
+  type ProjectSnapshot,
+  type RecoveryPayload,
+} from './project';
+import { FileSystemProjectStorage, canPickFolders, type StorageProvider } from './storage';
+
+const RECOVERY_STORAGE_KEY = 'nctgraphite-studio:recovery:v1';
+
+type PickerWindow = Window & { showDirectoryPicker?: (options?: { mode?: string }) => Promise<FileSystemDirectoryHandle> };
 
 const initial: Project = { name: 'Untitled app', density: 'compact', modules: [], root: { id: 'root', kind: 'stack', label: 'App layout', props: {}, children: [{ id: 'intro', kind: 'text', label: 'Welcome to your app', props: {}, children: [] }, { id: 'section', kind: 'accordion', label: 'Controls', props: {}, children: [{ id: 'action', kind: 'button', label: 'Get started', props: {}, children: [] }] }] } };
 
@@ -70,6 +90,14 @@ export default function App() {
   const [notice, setNotice] = useState('Ready');
   const [previewWidth, setPreviewWidth] = useState<number | null>(null);
   const input = useRef<HTMLInputElement>(null);
+  const [manifest, setManifest] = useState<ProjectManifest>(() => defaultManifest(initial.name));
+  const [otherViews, setOtherViews] = useState<Record<string, string>>({});
+  const [extraFiles, setExtraFiles] = useState<Record<string, string>>({});
+  const [store, setStore] = useState<StorageProvider | null>(null);
+  const [revisions, setRevisions] = useState<Record<string, string>>({});
+  const [savedFingerprint, setSavedFingerprint] = useState<string | null>(null);
+  const [conflictPath, setConflictPath] = useState<string | null>(null);
+  const [recovery, setRecovery] = useState<RecoveryPayload | null>(null);
   const editingModule = editingModuleId ? project.modules.find(m => m.id === editingModuleId) ?? null : null;
   const activeRoot = editingModule?.root ?? project.root;
   const selected = find(activeRoot, selectedId) ?? activeRoot;
@@ -80,6 +108,185 @@ export default function App() {
     setFuture([]);
     setProject(next);
   };
+  const currentSnapshot = (): ProjectSnapshot => ({
+    manifest: { ...manifest, name: project.name },
+    views: { [manifest.entry]: project },
+    rawViews: otherViews,
+    extraFiles,
+  });
+  const dirty = savedFingerprint === null || snapshotFingerprint(currentSnapshot()) !== savedFingerprint;
+  function clearRecovery() {
+    try { localStorage.removeItem(RECOVERY_STORAGE_KEY); } catch { /* private mode */ }
+    setRecovery(null);
+  }
+  function confirmDiscard(): boolean {
+    if (!dirty) return true;
+    return window.confirm('You have unsaved changes. Discard them?');
+  }
+  function applyOpened(opened: OpenedProject, nextStore: StorageProvider | null) {
+    const entryDoc = opened.snapshot.views[opened.snapshot.manifest.entry];
+    setProject(entryDoc);
+    setManifest(opened.snapshot.manifest);
+    setOtherViews(opened.snapshot.rawViews);
+    setExtraFiles(opened.snapshot.extraFiles);
+    setRevisions(opened.revisions);
+    setStore(nextStore);
+    setSavedFingerprint(snapshotFingerprint(opened.snapshot));
+    setPast([]);
+    setFuture([]);
+    setEditingModuleId(null);
+    setSelected(entryDoc.root.id);
+    setConflictPath(null);
+  }
+  function newProject() {
+    if (!confirmDiscard()) return;
+    const fresh = structuredClone(initial);
+    setProject(fresh);
+    setManifest(defaultManifest(fresh.name));
+    setOtherViews({});
+    setExtraFiles({});
+    setRevisions({});
+    setStore(null);
+    setSavedFingerprint(null);
+    setPast([]);
+    setFuture([]);
+    setEditingModuleId(null);
+    setSelected(fresh.root.id);
+    clearRecovery();
+    setNotice('New project — unsaved');
+  }
+  async function openFolder() {
+    if (!confirmDiscard()) return;
+    const picker = window as PickerWindow;
+    if (!canPickFolders(picker) || !picker.showDirectoryPicker) { input.current?.click(); return; }
+    try {
+      const dir = await picker.showDirectoryPicker({ mode: 'readwrite' });
+      const nextStore = new FileSystemProjectStorage(dir);
+      const opened = await openProjectFromStorage(nextStore);
+      applyOpened(opened, nextStore);
+      clearRecovery();
+      setNotice(`Opened ${opened.snapshot.manifest.name}`);
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return;
+      setNotice(`Could not open this project: ${(err as Error).message}`);
+    }
+  }
+  function downloadBundle(snap: ProjectSnapshot) {
+    const blob = new Blob([encodeProjectBundle(snap)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
+    a.download = `${snap.manifest.name.trim().replace(/[^a-z0-9_-]+/gi, '-') || 'project'}.nctgraphite-project.json`;
+    a.click(); URL.revokeObjectURL(url);
+  }
+  async function save() {
+    const snap = currentSnapshot();
+    const fingerprint = snapshotFingerprint(snap);
+    if (store?.canWriteDirectly) {
+      try {
+        const next = await saveProjectToStorage(store, snap, revisions);
+        setRevisions(next);
+        setSavedFingerprint(fingerprint);
+        clearRecovery();
+        setNotice('Project saved');
+      } catch (err) {
+        if (err instanceof ProjectConflictError) {
+          setConflictPath(err.path);
+          setNotice(`External change in ${err.path} — review before saving`);
+        } else {
+          setNotice(`Could not save: ${(err as Error).message}`);
+        }
+      }
+      return;
+    }
+    downloadBundle(snap);
+    setSavedFingerprint(fingerprint);
+    clearRecovery();
+    setNotice('Project exported — use Open with a folder picker to save directly');
+  }
+  async function saveAs() {
+    const snap = currentSnapshot();
+    const picker = window as PickerWindow;
+    if (!canPickFolders(picker) || !picker.showDirectoryPicker) {
+      downloadBundle(snap);
+      setNotice('Project exported as a copy');
+      return;
+    }
+    try {
+      const dir = await picker.showDirectoryPicker({ mode: 'readwrite' });
+      const nextStore = new FileSystemProjectStorage(dir);
+      const next = await saveProjectToStorage(nextStore, snap, {}, { force: true });
+      setStore(nextStore);
+      setRevisions(next);
+      setSavedFingerprint(snapshotFingerprint(snap));
+      clearRecovery();
+      setNotice(`Saved a copy in ${snap.manifest.name}`);
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return;
+      setNotice(`Could not save a copy: ${(err as Error).message}`);
+    }
+  }
+  async function overwriteConflict() {
+    if (!store || !conflictPath) return;
+    try {
+      const snap = currentSnapshot();
+      const next = await saveProjectToStorage(store, snap, revisions, { force: true });
+      setRevisions(next);
+      setSavedFingerprint(snapshotFingerprint(snap));
+      clearRecovery();
+      setConflictPath(null);
+      setNotice('Saved — external changes overwritten');
+    } catch (err) {
+      setNotice(`Could not save: ${(err as Error).message}`);
+    }
+  }
+  async function reloadFromDisk() {
+    if (!store) return;
+    try {
+      const opened = await openProjectFromStorage(store);
+      applyOpened(opened, store);
+      setNotice('Reloaded from disk — your edits were discarded');
+    } catch (err) {
+      setNotice(`Could not reload: ${(err as Error).message}`);
+    }
+  }
+  function resumeRecovery() {
+    if (!recovery) return;
+    const snap = recovery.snapshot;
+    const entryDoc = snap.views[snap.manifest.entry];
+    if (!entryDoc) { setNotice('Recovery data is incomplete'); return; }
+    setProject(entryDoc);
+    setManifest(snap.manifest);
+    setOtherViews(snap.rawViews);
+    setExtraFiles(snap.extraFiles);
+    setPast([]);
+    setFuture([]);
+    setEditingModuleId(null);
+    setSelected(entryDoc.root.id);
+    setSavedFingerprint(null);
+    setRecovery(null);
+    setNotice('Recovered unsaved work — save to keep it');
+  }
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(RECOVERY_STORAGE_KEY);
+      if (!raw) return;
+      setRecovery(decodeRecovery(raw));
+    } catch {
+      try { localStorage.removeItem(RECOVERY_STORAGE_KEY); } catch { /* private mode */ }
+    }
+  }, []);
+  useEffect(() => {
+    if (!dirty) return;
+    const id = window.setTimeout(() => {
+      try { localStorage.setItem(RECOVERY_STORAGE_KEY, encodeRecovery(currentSnapshot())); } catch { /* private mode */ }
+    }, 800);
+    return () => window.clearTimeout(id);
+  });
+  useEffect(() => {
+    if (!dirty) return;
+    const onBefore = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', onBefore);
+    return () => window.removeEventListener('beforeunload', onBefore);
+  }, [dirty]);
   const changeTree = (fn: (root: Node) => Node) => {
     const next: Project = editingModuleId
       ? { ...project, modules: project.modules.map(m => m.id === editingModuleId ? { ...m, root: fn(m.root) } : m) }
@@ -212,8 +419,19 @@ export default function App() {
   }
   async function load(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]; event.target.value = ''; if (!file) return;
+    if (!confirmDiscard()) return;
     try {
       const text = await file.text();
+      if (!text.trimStart().startsWith('<')) {
+        const data = JSON.parse(text);
+        if (data && typeof data === 'object' && (data as { format?: unknown }).format === 'nctgraphite-project-bundle') {
+          const snap = decodeProjectBundle(text);
+          applyOpened({ snapshot: snap, revisions: {} }, null);
+          setSavedFingerprint(null);
+          setNotice('Project imported — save to keep it');
+          return;
+        }
+      }
       let next: Project | null = null;
       if (text.trimStart().startsWith('<')) {
         next = parseLayoutDocument(text);
@@ -226,13 +444,23 @@ export default function App() {
       setPast(p => [...p.slice(-49), structuredClone(project)]);
       setFuture([]);
       setProject(next);
+      setManifest(defaultManifest(next.name));
+      setOtherViews({});
+      setExtraFiles({});
+      setRevisions({});
+      setStore(null);
+      setSavedFingerprint(null);
       setEditingModuleId(null); setSelected(next.root.id); setNotice('Project opened');
     } catch { setNotice('Could not open this project: invalid or unsupported file'); }
   }
   const selectedModuleDef = selected.kind === 'module' ? project.modules.find(m => m.id === selected.moduleId) : undefined;
   const selectedEntry = catalog.find(e => e.kind === selected.kind);
   const propNames = editablePropsFor(selected.kind).filter(n => n !== 'label' && n !== 'title');
-  const topbar = <header className="topbar"><div className="brand"><span className="brand-mark">N</span><span>NCTGraphite <strong>Studio</strong><small>APP BUILDER</small></span></div><NCTGraphiteLayoutItem className="project-title" grow={1}><span className="status-dot" />{project.name}<span className="title-sub"> / Design workspace</span></NCTGraphiteLayoutItem><NCTGraphiteToolbar className="top-actions" compact size="sm"><button onClick={undo} disabled={past.length === 0} title="Undo">↩</button><button onClick={redo} disabled={future.length === 0} title="Redo">↪</button><button onClick={() => input.current?.click()}>Open</button><button onClick={saveJson}>Save JSON</button><button className="primary" onClick={saveXml}>Save XML</button><input ref={input} hidden type="file" accept=".json,.xml,application/json,application/xml" onChange={load} /></NCTGraphiteToolbar></header>;
+  const topbar = <header className="topbar"><div className="brand"><span className="brand-mark">N</span><span>NCTGraphite <strong>Studio</strong><small>APP BUILDER</small></span></div><NCTGraphiteLayoutItem className="project-title" grow={1}><span className="status-dot" />{project.name}{dirty ? ' • unsaved' : ''}<span className="title-sub"> / Design workspace</span></NCTGraphiteLayoutItem><NCTGraphiteToolbar className="top-actions" compact size="sm"><button onClick={undo} disabled={past.length === 0} title="Undo">↩</button><button onClick={redo} disabled={future.length === 0} title="Redo">↪</button><button onClick={newProject}>New</button><button onClick={openFolder}>Open</button><button className="primary" onClick={save}>Save</button><button onClick={saveAs}>Save As</button><button onClick={saveJson} title="Export the layout as a single JSON file">Export JSON</button><button onClick={saveXml} title="Export the layout as a single XML file">Export XML</button><input ref={input} hidden type="file" accept=".json,.xml,application/json,application/xml" onChange={load} /></NCTGraphiteToolbar></header>;
+  const banners = <>
+    {recovery && <div className="banner recovery" role="alert"><span>Unsaved work from {recovery.savedAt} was found.</span><span className="banner-actions"><button onClick={resumeRecovery}>Resume</button><button onClick={clearRecovery}>Discard</button></span></div>}
+    {conflictPath && <div className="banner conflict" role="alert"><span>{conflictPath} changed on disk. Reload it, or overwrite it with your version.</span><span className="banner-actions"><button onClick={reloadFromDisk}>Reload from disk</button><button onClick={overwriteConflict}>Overwrite</button><button onClick={() => setConflictPath(null)}>Cancel</button></span></div>}
+  </>;
   const statusbar = <footer className="statusbar"><span><i className="status-dot" /> {notice}</span><span>NCTGRAPHITE STUDIO &nbsp; / &nbsp; EARLY BUILD</span></footer>;
   const groups = new Map<string, typeof catalog>();
   for (const entry of catalog) {
@@ -244,7 +472,7 @@ export default function App() {
       <aside className="sidebar left"><div className="sidebar-title">COMPONENTS <span>01</span></div><div className="sidebar-intro">Build from the structure up.<br /><span>Select a container, then add a component.</span></div>{[...groups].map(([category, entries]) => <NCTGraphiteAccordion key={category} title={category[0].toUpperCase() + category.slice(1)} defaultOpen={category === 'layout'}><NCTGraphitePanel variant="well"><div className="palette">{entries.map(e => <button key={e.kind} onClick={() => add(e.kind)} title={e.description}><span>{e.kind === 'text' ? 'T' : '▦'}</span>{labels[e.kind]}<b>+</b></button>)}</div></NCTGraphitePanel></NCTGraphiteAccordion>)}<div className="sidebar-title">MODULES <span>{String(project.modules.length).padStart(2, '0')}</span></div>{editingModule
         ? <div className="sidebar-intro">Editing <strong>{editingModule.name}</strong>.<br /><span>Changes update every instance.</span><br /><button className="primary" onClick={() => { setEditingModuleId(null); setSelected(project.root.id); setNotice('Back to app layout'); }} style={{ marginTop: 8 }}>Done editing</button></div>
         : <><div className="sidebar-intro"><span>Save components as reusable modules, then insert them anywhere.</span><br /><button onClick={saveAsModule} style={{ marginTop: 8 }}>Save selection as module</button></div><div className="tree">{project.modules.map(m => <div key={m.id} className={`tree-item ${selectedModuleDef?.id === m.id ? 'selected' : ''}`}><span className="tree-icon">▣</span>{m.name}<span className="tree-kind"><button onClick={() => insertModule(m.id)} title={`Insert ${m.name}`}>insert</button> <button onClick={() => { setEditingModuleId(m.id); setSelected(m.root.id); setNotice(`Editing ${m.name}`); }} title={`Edit ${m.name}`}>edit</button> <button onClick={() => deleteModule(m.id)} title={`Delete ${m.name}`}>✕</button></span></div>)}</div></>}</aside>
-      <main className="editor"><div className="editor-bar"><div><span className="eyebrow">DESIGN</span><span className="bar-separator" /> <strong>{editingModule ? `Module: ${editingModule.name}` : 'Layout canvas'}</strong></div><div className="canvas-mode"><span className="preview-sizes">{[null, ...PREVIEW_WIDTHS].map(w => <button key={String(w)} className={previewWidth === w ? 'primary' : ''} onClick={() => setPreviewWidth(w)} title={w == null ? 'Fluid width' : `${w}px preview`}>{w == null ? 'Fluid' : w}</button>)}</span><span className="status-dot" /> LIVE PREVIEW</div></div><div className="canvas"><div className="canvas-label"><span>{editingModule ? 'MODULE PREVIEW' : 'APP PREVIEW'}</span><span>RESPONSIVE LAYOUT</span></div><div className={`artboard ${project.density}`} data-nct-density={project.density} style={previewWidth ? { maxWidth: previewWidth } : undefined}><div className="artboard-header"><span className="artboard-dot" />{editingModule?.name ?? project.name}{previewWidth ? <span> · {previewWidth}px</span> : null}<span>•••</span></div><div className="artboard-body"><Preview node={activeRoot} modules={project.modules} selected={selectedId} select={setSelected} /></div></div><div className="canvas-help">Select a component on the canvas or in the document tree.</div></div><div className="editor-footer"><span>◈ &nbsp; LAYOUT EDITOR</span><span>Tree-based composition</span></div></main>
+      <main className="editor"><div className="editor-bar"><div><span className="eyebrow">DESIGN</span><span className="bar-separator" /> <strong>{editingModule ? `Module: ${editingModule.name}` : 'Layout canvas'}</strong></div><div className="canvas-mode"><span className="preview-sizes">{[null, ...PREVIEW_WIDTHS].map(w => <button key={String(w)} className={previewWidth === w ? 'primary' : ''} onClick={() => setPreviewWidth(w)} title={w == null ? 'Fluid width' : `${w}px preview`}>{w == null ? 'Fluid' : w}</button>)}</span><span className="status-dot" /> LIVE PREVIEW</div></div>{banners}<div className="canvas"><div className="canvas-label"><span>{editingModule ? 'MODULE PREVIEW' : 'APP PREVIEW'}</span><span>RESPONSIVE LAYOUT</span></div><div className={`artboard ${project.density}`} data-nct-density={project.density} style={previewWidth ? { maxWidth: previewWidth } : undefined}><div className="artboard-header"><span className="artboard-dot" />{editingModule?.name ?? project.name}{previewWidth ? <span> · {previewWidth}px</span> : null}<span>•••</span></div><div className="artboard-body"><Preview node={activeRoot} modules={project.modules} selected={selectedId} select={setSelected} /></div></div><div className="canvas-help">Select a component on the canvas or in the document tree.</div></div><div className="editor-footer"><span>◈ &nbsp; LAYOUT EDITOR</span><span>Tree-based composition</span></div></main>
       <aside className="sidebar right"><div className="sidebar-title">INSPECTOR <span>02</span></div><div className="selection"><span className="selection-icon">◈</span><div><strong>{selected.kind === 'module' ? selectedModuleDef?.name ?? selected.label : selected.label || labels[selected.kind]}</strong><small>NCTGraphite {labels[selected.kind]}</small></div></div><NCTGraphiteAccordion title="Tree" defaultOpen><NCTGraphitePanel><div className="property tree-ops"><button onClick={() => moveSelected(-1)}>Move up</button><button onClick={() => moveSelected(1)}>Move down</button><button onClick={indentSelected}>Indent</button><button onClick={outdentSelected}>Outdent</button><button onClick={duplicateSelected}>Duplicate</button><button onClick={undo} disabled={past.length === 0}>Undo</button><button onClick={redo} disabled={future.length === 0}>Redo</button></div><div className="tree"><Tree node={activeRoot} modules={project.modules} selected={selectedId} select={setSelected} /></div></NCTGraphitePanel></NCTGraphiteAccordion>{selected.kind === 'module' && selectedModuleDef
         ? <NCTGraphiteAccordion title="Module instance" defaultOpen><NCTGraphitePanel><div className="property"><p>Instances reference {selectedModuleDef.name}. Editing the module updates every instance.</p></div><div className="property"><button onClick={() => { setEditingModuleId(selectedModuleDef.id); setSelected(selectedModuleDef.root.id); setNotice(`Editing ${selectedModuleDef.name}`); }}>Edit module</button></div></NCTGraphitePanel></NCTGraphiteAccordion>
         : <NCTGraphiteAccordion title="Properties" defaultOpen><div className="property"><label htmlFor="node-label">{selected.kind === 'text' ? 'TEXT' : 'LABEL'}</label><input id="node-label" value={selected.label} onChange={e => changeTree(root => update(root, selected.id, n => ({ ...n, label: e.target.value })))} /></div>{selectedEntry ? <div className="property"><label>TYPE</label><div className="readout">{selectedEntry.tag}</div><p>{selectedEntry.description}</p></div> : <div className="property"><label>TYPE</label><div className="readout">{labels[selected.kind]}</div></div>}{propNames.map(name => {

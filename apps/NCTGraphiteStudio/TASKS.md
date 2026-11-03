@@ -16,13 +16,13 @@
 
 See [PROJECT-FORMAT.md](PROJECT-FORMAT.md) for the proposed project model.
 
-- [ ] Specify and version the project manifest and folder structure, including app logic, assets, themes, and entry points.
-- [ ] Implement new, open, save, and save-as operations with a storage abstraction for supported hosts.
-- [ ] Track unsaved changes, provide recovery, and detect external file conflicts.
-- [ ] Validate projects and implement explicit, non-destructive format migrations; reject unsupported newer versions safely.
-- [ ] Import the early Studio JSON format into the project model.
+- [x] Specify and version the project manifest and folder structure, including app logic, assets, themes, and entry points.
+- [x] Implement new, open, save, and save-as operations with a storage abstraction for supported hosts.
+- [x] Track unsaved changes, provide recovery, and detect external file conflicts.
+- [x] Validate projects and implement explicit, non-destructive format migrations; reject unsupported newer versions safely.
+- [x] Import the early Studio JSON format into the project model.
 - [ ] Define an integration path for existing React apps that preserves files Studio does not understand.
-- [ ] Test project round trips, migrations, recovery, and conflict handling.
+- [x] Test project round trips, migrations, recovery, and conflict handling.
 
 ## Builder foundation
 
