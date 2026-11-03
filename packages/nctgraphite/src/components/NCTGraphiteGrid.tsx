@@ -1,6 +1,33 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import type { NCTGraphiteComponentMeta } from './NCTGraphiteMeta.js';
 
+export interface NCTGraphiteGridBreakpoint {
+  minWidth: number;
+  columns?: string;
+  rows?: string;
+  gap?: number | string;
+  template?: string;
+}
+
+/** Last breakpoint at or below the viewport width (undefined when none match; SSR renders base). */
+function useBreakpoint(breakpoints: NCTGraphiteGridBreakpoint[] | undefined): NCTGraphiteGridBreakpoint | undefined {
+  const [match, setMatch] = useState<NCTGraphiteGridBreakpoint | undefined>(undefined);
+  useEffect(() => {
+    if (breakpoints == null || breakpoints.length === 0 || typeof window === 'undefined') return;
+    const ordered = [...breakpoints].sort((a, b) => a.minWidth - b.minWidth);
+    const mqls = ordered.map(bp => window.matchMedia(`(min-width: ${bp.minWidth}px)`));
+    const onChange = () => {
+      let next: NCTGraphiteGridBreakpoint | undefined;
+      mqls.forEach((mql, i) => { if (mql.matches) next = ordered[i]; });
+      setMatch(next);
+    };
+    onChange();
+    mqls.forEach(mql => mql.addEventListener('change', onChange));
+    return () => mqls.forEach(mql => mql.removeEventListener('change', onChange));
+  }, [breakpoints]);
+  return match;
+}
+
 /** Tracks a min-width media query (client-only; labs render client-side). */
 function useWide(minWidth: number | undefined): boolean {
   const [match, setMatch] = useState<boolean>(false);
@@ -37,6 +64,7 @@ export const NCTGraphiteGridMeta: NCTGraphiteComponentMeta = {
     wideRows: { type: 'string', required: false, description: 'grid-template-rows at/above wideMinWidth' },
     wideGap: { type: ['number', 'string'], required: false, description: 'Gap at/above wideMinWidth' },
     wideTemplate: { type: 'string', required: false, description: 'Full grid-template at/above wideMinWidth' },
+    breakpoints: { type: 'array', required: false, description: 'Ordered { minWidth, columns?, rows?, gap?, template? } width breakpoints; the last match at/below the viewport wins per field and extends the wide* variants' },
     children: { type: 'node', required: true, description: 'Grid items' },
   },
   slots: { default: 'Grid items' },
@@ -62,6 +90,7 @@ export interface NCTGraphiteGridProps {
   wideRows?: string;
   wideGap?: number | string;
   wideTemplate?: string;
+  breakpoints?: NCTGraphiteGridBreakpoint[];
   className?: string;
   style?: CSSProperties;
   children: ReactNode;
@@ -71,14 +100,15 @@ export interface NCTGraphiteGridProps {
 export function NCTGraphiteGrid({
   columns = '1fr', rows = 'auto', gap = 0, template, autoFlow, autoRows, autoColumns, align, justify,
   alignContent, justifyContent, padding,
-  wideMinWidth, wideColumns, wideRows, wideGap, wideTemplate,
+  wideMinWidth, wideColumns, wideRows, wideGap, wideTemplate, breakpoints,
   className = '', style, children,
 }: NCTGraphiteGridProps) {
   const wide = useWide(wideMinWidth);
-  const effTemplate = wide && wideTemplate ? wideTemplate : template;
-  const effColumns = wide && wideColumns ? wideColumns : columns;
-  const effRows = wide && wideRows ? wideRows : rows;
-  const effGap = wide && wideGap != null ? wideGap : gap;
+  const bp = useBreakpoint(breakpoints);
+  const effTemplate = bp?.template ?? (wide && wideTemplate ? wideTemplate : template);
+  const effColumns = bp?.columns ?? (wide && wideColumns ? wideColumns : columns);
+  const effRows = bp?.rows ?? (wide && wideRows ? wideRows : rows);
+  const effGap = bp?.gap ?? (wide && wideGap != null ? wideGap : gap);
   // A slash-less template is a column track list, not grid-template
   // shorthand (which would wrongly produce rows).
   const templateIsColumns = effTemplate != null && !effTemplate.includes('/');

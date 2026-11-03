@@ -6,7 +6,7 @@ import { createServer } from 'vite';
 
 const server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom' });
 after(() => server.close());
-const { NCTGraphiteStack, NCTGraphiteGrid, NCTGraphiteOverlay, NCTGraphiteAccordion, NCTGraphiteToolbar, NCTGraphiteScene, NCTGraphiteSceneItem, NCTGraphiteLayoutItem, NCTGraphiteColumns, NCTGraphiteLayoutShell } = await server.ssrLoadModule('../../packages/nctgraphite/src/index.ts');
+const { NCTGraphiteStack, NCTGraphiteGrid, NCTGraphiteOverlay, NCTGraphiteAccordion, NCTGraphiteToolbar, NCTGraphiteScene, NCTGraphiteSceneItem, NCTGraphiteLayoutItem, NCTGraphiteColumns, NCTGraphiteLayoutShell, NCTGraphiteBaseline } = await server.ssrLoadModule('../../packages/nctgraphite/src/index.ts');
 const render = (component, props, ...children) => renderToStaticMarkup(React.createElement(component, props, ...children));
 
 test('stack composes a wrapping row with baseline alignment', () => {
@@ -64,4 +64,17 @@ test('layout shell composes header, body regions and footer in reading order', (
   const html = render(NCTGraphiteLayoutShell, { header: React.createElement('header', null, 'Header'), footer: React.createElement('footer', null, 'Footer'), columns: '1fr' }, React.createElement('main', null, 'Main'));
   assert.ok(html.indexOf('Header') < html.indexOf('Main')); assert.ok(html.indexOf('Main') < html.indexOf('Footer'));
   assert.match(html, /grid-template-columns:1fr/);
+});
+test('grid breakpoints render the base tracks on the server', () => {
+  const html = render(NCTGraphiteGrid, { columns: '1fr', breakpoints: [{ minWidth: 800, columns: '1fr 1fr' }, { minWidth: 1200, columns: '1fr 1fr 1fr' }] }, 'A');
+  assert.match(html, /grid-template-columns:1fr/);
+});
+test('baseline paints rules on the line rhythm', () => {
+  const html = render(NCTGraphiteBaseline, { line: 8, color: 'red' });
+  assert.match(html, /repeating-linear-gradient\(to bottom, red 0, red 1px, transparent 1px, transparent 8px\)/);
+  assert.match(html, /aria-hidden="true"/);
+});
+test('baseline accepts CSS rhythm units and offsets', () => {
+  const html = render(NCTGraphiteBaseline, { line: 'var(--rhythm)', offset: 2 });
+  assert.match(html, /transparent var\(--rhythm\)/); assert.match(html, /background-position-y:2px/);
 });
