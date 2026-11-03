@@ -150,3 +150,39 @@ export type { NCTGraphiteSplitterProps } from './components/NCTGraphiteSplitter.
 export { NCTGraphiteColumnGuides, NCTGraphiteColumnGuidesMeta } from './components/NCTGraphiteColumnGuides.js';
 export type { NCTGraphiteColumnGuidesProps } from './components/NCTGraphiteColumnGuides.js';
 export type { NCTGraphiteGridBreakpoint } from './components/NCTGraphiteGrid.js';
+
+export {
+  NCTGRAPHITE_LAYOUT_KIND,
+  NCTGRAPHITE_LAYOUT_VERSION,
+  NCTGRAPHITE_LAYOUT_FILE_EXTENSION,
+  layoutContainers,
+  layoutKindLabels,
+  makeLayoutNode,
+  findLayoutNode,
+  updateLayoutNode,
+  removeLayoutNode,
+  cloneLayoutNode,
+  moveLayoutNode,
+  duplicateLayoutNode,
+  instantiateLayoutModule,
+  removeLayoutModuleRefs,
+  validLayoutNode,
+  validLayoutModule,
+  validLayoutDocument,
+} from './xml/NCTGraphiteLayoutDocument.js';
+export type {
+  LayoutDocument,
+  LayoutKind,
+  LayoutNode,
+  LayoutPropValue,
+  SavedLayoutModule,
+} from './xml/NCTGraphiteLayoutDocument.js';
+export {
+  LAYOUT_XML_ROOT,
+  layoutTagFor,
+  serializeLayoutDocument,
+  parseLayoutDocument,
+} from './xml/NCTGraphiteLayoutXml.js';
+export { buildLayoutCatalog, editablePropsFor } from './xml/NCTGraphiteLayoutCatalog.js';
+export type { LayoutCatalogEntry } from './xml/NCTGraphiteLayoutCatalog.js';
+export { NCTGraphiteLayoutView } from './xml/NCTGraphiteLayoutReact.js';

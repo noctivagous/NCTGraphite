@@ -1,76 +1,108 @@
-/** Studio document model: layout trees plus saved reusable modules.
+/** Studio project model: thin layer over the shared layout-tree document.
  * Pure helpers live here (testable without React); `App.tsx` owns the state.
  * Module instances (`kind: 'module'`) reference a saved definition by id, so
  * editing a definition updates every instance. Renderers guard cycles with a
- * `seen` set of module ids.
+ * `seen` set of module ids. New code should import from `@nct/nctgraphite`
+ * directly; these aliases keep existing imports working.
  */
+import {
+  cloneLayoutNode,
+  findLayoutNode,
+  instantiateLayoutModule,
+  layoutContainers,
+  layoutKindLabels,
+  makeLayoutNode,
+  moveLayoutNode,
+  duplicateLayoutNode,
+  removeLayoutModuleRefs,
+  removeLayoutNode,
+  updateLayoutNode,
+  validLayoutDocument,
+  validLayoutModule,
+  validLayoutNode,
+  type LayoutDocument,
+  type LayoutKind,
+  type LayoutNode,
+  type SavedLayoutModule,
+} from '@nct/nctgraphite';
 
-export type Kind = 'stack' | 'row' | 'grid' | 'overlay' | 'accordion' | 'text' | 'button' | 'module';
+export type Kind = LayoutKind;
+export type Node = LayoutNode;
+export type SavedModule = SavedLayoutModule;
+export type Project = LayoutDocument;
 
-export interface Node { id: string; kind: Kind; label: string; moduleId?: string; children: Node[] }
+export const containers = layoutContainers;
+export const labels = layoutKindLabels;
 
-export interface SavedModule { id: string; name: string; root: Node }
+export const makeNode = makeLayoutNode;
+export const find = findLayoutNode;
+export const update = updateLayoutNode;
+export const remove = removeLayoutNode;
+export const cloneWithIds = cloneLayoutNode;
+export const instantiateModule = instantiateLayoutModule;
+export const removeModuleRefs = removeLayoutModuleRefs;
+export const validNode = validLayoutNode;
+export const validModule = validLayoutModule;
+export const validDocument = validLayoutDocument;
+export const moveNode = moveLayoutNode;
+export const duplicateNode = duplicateLayoutNode;
 
-export interface Project { name: string; density: 'compact' | 'comfortable'; root: Node; modules: SavedModule[] }
-
-export const containers: Kind[] = ['stack', 'row', 'grid', 'overlay', 'accordion'];
-
-export const labels: Record<Kind, string> = {
-  stack: 'Vertical stack', row: 'Horizontal stack', grid: 'Grid', overlay: 'Overlay',
-  accordion: 'Accordion', text: 'Text', button: 'Button', module: 'Module',
-};
-
-export const makeNode = (kind: Kind, label = labels[kind]): Node => ({
-  id: crypto.randomUUID(), kind, label, children: [],
-});
-
-export function find(node: Node, id: string): Node | undefined {
-  return node.id === id ? node : node.children.map(child => find(child, id)).find(Boolean);
-}
-
-export function update(node: Node, id: string, fn: (node: Node) => Node): Node {
-  return node.id === id ? fn(node) : { ...node, children: node.children.map(child => update(child, id, fn)) };
-}
-
-export function remove(node: Node, id: string): Node {
-  return { ...node, children: node.children.filter(child => child.id !== id).map(child => remove(child, id)) };
-}
-
-/** Deep copy with fresh ids. Module references keep their `moduleId`. */
-export function cloneWithIds(node: Node): Node {
-  return { ...node, id: crypto.randomUUID(), children: node.children.map(cloneWithIds) };
-}
-
-/** An instance node pointing at a saved definition (a leaf in the using tree). */
-export function instantiateModule(def: SavedModule): Node {
-  return { id: crypto.randomUUID(), kind: 'module', label: def.name, moduleId: def.id, children: [] };
-}
-
-/** Strip every instance of a deleted module from a tree. */
-export function removeModuleRefs(node: Node, moduleId: string): Node {
-  return {
-    ...node,
-    children: node.children
-      .filter(child => child.moduleId !== moduleId)
-      .map(child => removeModuleRefs(child, moduleId)),
+function toLayoutNode(raw: unknown, modules: Pick<SavedModule, 'id'>[]): LayoutNode | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const n = raw as Record<string, unknown>;
+  const candidate: LayoutNode = {
+    id: typeof n.id === 'string' ? n.id : '',
+    kind: n.kind as LayoutKind,
+    label: typeof n.label === 'string' ? n.label : '',
+    props: (n.props as LayoutNode['props']) ?? {},
+    wide: n.wide as LayoutNode['wide'],
+    moduleId: n.moduleId as string | undefined,
+    children: [],
   };
+  if (Array.isArray(n.children)) {
+    const kids: LayoutNode[] = [];
+    for (const c of n.children) {
+      const kid = toLayoutNode(c, modules);
+      if (!kid) return null;
+      kids.push(kid);
+    }
+    candidate.children = kids;
+  }
+  if (candidate.wide === undefined) delete candidate.wide;
+  if (candidate.moduleId === undefined) delete candidate.moduleId;
+  const ids = new Set<string>();
+  // Validate standalone shape first (module refs checked against provided ids).
+  if (!validLayoutNode(candidate, modules, ids)) return null;
+  return candidate;
 }
 
-export function validNode(value: unknown, modules: Pick<SavedModule, 'id'>[] = [], ids = new Set<string>()): value is Node {
-  if (!value || typeof value !== 'object') return false;
-  const n = value as Node;
-  if (typeof n.id !== 'string' || !n.id || ids.has(n.id) || !Object.hasOwn(labels, n.kind) || typeof n.label !== 'string' || !Array.isArray(n.children)) return false;
-  if (n.kind === 'module') {
-    if (typeof n.moduleId !== 'string' || !modules.some(m => m.id === n.moduleId) || n.children.length > 0) return false;
-  } else if (!containers.includes(n.kind) && n.children.length > 0) return false;
-  ids.add(n.id);
-  return n.children.every(child => validNode(child, modules, ids));
-}
-
-export function validModule(value: unknown, modules: Pick<SavedModule, 'id'>[] = [], ids = new Set<string>()): value is SavedModule {
-  if (!value || typeof value !== 'object') return false;
-  const m = value as SavedModule;
-  if (typeof m.id !== 'string' || !m.id || ids.has(m.id) || typeof m.name !== 'string') return false;
-  ids.add(m.id);
-  return containers.includes(m.root?.kind) && validNode(m.root, modules, ids);
+/** Migrate an early `.nctgraphite.json` download (v1 without modules, v2 with)
+ * into the shared layout document. Returns null when invalid. */
+export function migrateLegacyStudioProject(data: unknown): Project | null {
+  if (!data || typeof data !== 'object') return null;
+  const d = data as Record<string, unknown>;
+  if (d.format !== 'nctgraphite-studio' || (d.version !== 1 && d.version !== 2)) return null;
+  if (typeof d.name !== 'string' || !['compact', 'comfortable'].includes(d.density as string)) return null;
+  const rawModules: unknown[] = d.version === 2 && Array.isArray(d.modules) ? d.modules : [];
+  const modules: SavedModule[] = [];
+  const moduleIds = new Set<string>();
+  for (const raw of rawModules) {
+    if (!raw || typeof raw !== 'object') return null;
+    const r = raw as Record<string, unknown>;
+    const root = toLayoutNode(r.root, rawModules as Pick<SavedModule, 'id'>[]);
+    if (typeof r.id !== 'string' || !r.id || typeof r.name !== 'string' || !root) return null;
+    if (moduleIds.has(r.id) || !layoutContainers.includes(root.kind)) return null;
+    moduleIds.add(r.id);
+    modules.push({ id: r.id, name: r.name, root });
+  }
+  const root = toLayoutNode(d.root, modules);
+  if (!root || !layoutContainers.includes(root.kind)) return null;
+  const doc: Project = {
+    name: d.name as string,
+    density: d.density as Project['density'],
+    root,
+    modules,
+  };
+  if (!validLayoutDocument(doc)) return null;
+  return doc;
 }
