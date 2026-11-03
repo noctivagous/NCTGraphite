@@ -145,4 +145,6 @@ export { NCTGraphiteLayoutShell, NCTGraphiteLayoutShellMeta } from './components
 export type { NCTGraphiteLayoutShellProps } from './components/NCTGraphiteLayoutShell.js';
 export { NCTGraphiteBaseline, NCTGraphiteBaselineMeta } from './components/NCTGraphiteBaseline.js';
 export type { NCTGraphiteBaselineProps } from './components/NCTGraphiteBaseline.js';
+export { NCTGraphiteSplitter, NCTGraphiteSplitterMeta } from './components/NCTGraphiteSplitter.js';
+export type { NCTGraphiteSplitterProps } from './components/NCTGraphiteSplitter.js';
 export type { NCTGraphiteGridBreakpoint } from './components/NCTGraphiteGrid.js';

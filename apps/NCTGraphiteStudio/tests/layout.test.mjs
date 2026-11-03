@@ -6,7 +6,7 @@ import { createServer } from 'vite';
 
 const server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom' });
 after(() => server.close());
-const { NCTGraphiteStack, NCTGraphiteGrid, NCTGraphiteOverlay, NCTGraphiteAccordion, NCTGraphiteToolbar, NCTGraphiteScene, NCTGraphiteSceneItem, NCTGraphiteLayoutItem, NCTGraphiteColumns, NCTGraphiteLayoutShell, NCTGraphiteBaseline } = await server.ssrLoadModule('../../packages/nctgraphite/src/index.ts');
+const { NCTGraphiteStack, NCTGraphiteGrid, NCTGraphiteOverlay, NCTGraphiteAccordion, NCTGraphiteToolbar, NCTGraphiteScene, NCTGraphiteSceneItem, NCTGraphiteLayoutItem, NCTGraphiteColumns, NCTGraphiteLayoutShell, NCTGraphiteBaseline, NCTGraphitePanel, NCTGraphiteSplitter, NCTGraphiteAppShell } = await server.ssrLoadModule('../../packages/nctgraphite/src/index.ts');
 const render = (component, props, ...children) => renderToStaticMarkup(React.createElement(component, props, ...children));
 
 test('stack composes a wrapping row with baseline alignment', () => {
@@ -77,4 +77,31 @@ test('baseline paints rules on the line rhythm', () => {
 test('baseline accepts CSS rhythm units and offsets', () => {
   const html = render(NCTGraphiteBaseline, { line: 'var(--rhythm)', offset: 2 });
   assert.match(html, /transparent var\(--rhythm\)/); assert.match(html, /background-position-y:2px/);
+});
+test('accordion honors controlled open state', () => {
+  assert.match(render(NCTGraphiteAccordion, { title: 'C', open: true }, 'Body'), /<details[^>]*open=""/);
+  assert.doesNotMatch(render(NCTGraphiteAccordion, { title: 'C', open: false }, 'Body'), /open=""/);
+});
+test('panel variants resolve through theme tokens', () => {
+  const raised = render(NCTGraphitePanel, { title: 'T' }, 'Body');
+  assert.match(raised, /var\(--nct-panel-bg/);
+  const well = render(NCTGraphitePanel, { variant: 'well' }, 'Body');
+  assert.match(well, /var\(--nct-well-bg/); assert.match(well, /inset 0 1px 3px/);
+});
+test('splitter sizes panes and exposes separator semantics', () => {
+  const html = render(NCTGraphiteSplitter, { sizes: [0.25, 0.75] }, 'A', 'B');
+  assert.match(html, /flex:0 0 25%/); assert.match(html, /flex:0 0 75%/);
+  assert.equal((html.match(/role="separator"/g) || []).length, 1);
+  assert.match(html, /aria-orientation="vertical"/); assert.match(html, /tabindex="0"/i);
+});
+test('splitter stacks vertically with a default even split', () => {
+  const html = render(NCTGraphiteSplitter, { direction: 'column' }, 'A', 'B', 'C');
+  assert.match(html, /flex-direction:column/);
+  assert.equal((html.match(/flex:0 0 33\.333/g) || []).length, 3);
+  assert.match(html, /aria-orientation="horizontal"/);
+});
+test('app shell wraps body regions with per-region styling', () => {
+  const html = render(NCTGraphiteAppShell, { sectionCount: 2, sectionClassName: ['left', 'right'], sectionStyle: [{ order: 0 }, { order: 1 }] }, 'A', 'B');
+  assert.equal((html.match(/<section/g) || []).length, 2);
+  assert.match(html, /class="left"/); assert.match(html, /class="right"/);
 });

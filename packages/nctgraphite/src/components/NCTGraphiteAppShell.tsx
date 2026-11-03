@@ -18,6 +18,9 @@ export const NCTGraphiteAppShellMeta: NCTGraphiteComponentMeta = {
     minWidth: { type: 'number', required: false, description: 'Minimum shell width in px' },
     maxWidth: { type: 'number', default: 1600, description: 'Maximum shell width in px' },
     gap: { type: ['number', 'string'], default: 12, description: 'Gap between header, body, footer, and sections (px number or CSS value)' },
+    stackMinWidth: { type: 'number', default: 1024, description: 'Viewport px at/above which row shells apply the proportion tracks (below stacks to one column)' },
+    sectionClassName: { type: ['string', 'array'], required: false, description: 'Class for every body region, or one per region' },
+    sectionStyle: { type: ['object', 'array'], required: false, description: 'Style for every body region, or one per region' },
     children: { type: 'node', required: true, description: 'Section content, one node per section in order' },
     className: { type: 'string', required: false, description: 'Extra root classes' },
   },
@@ -43,6 +46,9 @@ export interface NCTGraphiteAppShellProps {
   minWidth?: number;
   maxWidth?: number;
   gap?: number | string;
+  stackMinWidth?: number;
+  sectionClassName?: string | string[];
+  sectionStyle?: CSSProperties | CSSProperties[];
   className?: string;
   style?: CSSProperties;
   children: ReactNode;
@@ -80,6 +86,9 @@ export function NCTGraphiteAppShell({
   minWidth,
   maxWidth = 1600,
   gap = 12,
+  stackMinWidth = 1024,
+  sectionClassName,
+  sectionStyle,
   className = '',
   style,
   children,
@@ -111,18 +120,23 @@ export function NCTGraphiteAppShell({
         <NCTGraphiteGrid
           columns="1fr"
           rows={tracks.rows ?? 'auto'}
-          wideMinWidth={1024}
+          wideMinWidth={stackMinWidth}
           wideColumns={wideTracks}
           gap={gap}
           style={{ minHeight: '100%' }}
         >
-          {items.map((child, i) =>
-            child == null ? (
-              <section key={`pad-${i}`} style={{ minWidth: 0, minHeight: 0 }} />
-            ) : (
-              child
-            ),
-          )}
+          {items.map((child, i) => (
+            <section
+              key={`region-${i}`}
+              className={Array.isArray(sectionClassName) ? sectionClassName[i] : sectionClassName}
+              style={{
+                minWidth: 0, minHeight: 0,
+                ...(Array.isArray(sectionStyle) ? sectionStyle[i] : sectionStyle),
+              }}
+            >
+              {child}
+            </section>
+          ))}
         </NCTGraphiteGrid>
       </div>
       {footer ? <footer>{footer}</footer> : null}
