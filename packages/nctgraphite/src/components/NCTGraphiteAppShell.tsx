@@ -8,7 +8,7 @@ export const NCTGraphiteAppShellMeta: NCTGraphiteComponentMeta = {
   tag: 'NCTGraphiteAppShell',
   category: 'layout',
   description:
-    'App shell: header, N body sections, and footer. Default is 3 sections (the shading-lab arrangement). Row shells stack to one column below lg and apply proportion at/above lg. Sections are plain layout containers; any section may hold a nested NCTGraphiteAppShell for subdivisions.',
+    'App shell: header, N body sections, and footer. Default is 3 sections (the shading-lab arrangement). Row shells stack to one column below lg and apply proportion at/above lg. The body fills leftover viewport height; each section is a stretched grid cell so its child gets a definite height. Any section may hold a nested NCTGraphiteAppShell for subdivisions.',
   props: {
     header: { type: 'node', required: false, description: 'Header node (title bar / toolbar). Omitted header collapses to zero height.' },
     footer: { type: 'node', required: false, description: 'Footer node (status readout). Omitted footer collapses to zero height.' },
@@ -76,7 +76,7 @@ function toCssWidth(value: number | undefined): string | undefined {
   return value == null ? undefined : `${value}px`;
 }
 
-/** App shell: header, N body sections, footer. Base setting is layout containers only. */
+/** App shell: header, N body sections, footer. Body and sections fill leftover viewport height. */
 export function NCTGraphiteAppShell({
   header,
   footer,
@@ -116,21 +116,22 @@ export function NCTGraphiteAppShell({
       style={{ boxSizing: 'border-box', paddingTop: 'var(--safe-area-inset-top)', maxWidth: toCssWidth(maxWidth), minWidth: toCssWidth(minWidth), marginInline: 'auto', ...style }}
     >
       {header ? <header>{header}</header> : null}
-      <div style={{ flex: '1 1 0%', minHeight: 0, padding: gapCss }}>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0%', minHeight: 0, padding: gapCss }}>
         <NCTGraphiteGrid
           columns="1fr"
           rows={tracks.rows ?? 'auto'}
           wideMinWidth={stackMinWidth}
           wideColumns={wideTracks}
+          wideRows={orientation === 'row' ? '1fr' : undefined}
           gap={gap}
-          style={{ minHeight: '100%' }}
+          style={{ flex: '1 1 0%', minWidth: 0, minHeight: 0 }}
         >
           {items.map((child, i) => (
             <section
               key={`region-${i}`}
               className={Array.isArray(sectionClassName) ? sectionClassName[i] : sectionClassName}
               style={{
-                minWidth: 0, minHeight: 0,
+                minWidth: 0, minHeight: 0, height: '100%', display: 'grid',
                 ...(Array.isArray(sectionStyle) ? sectionStyle[i] : sectionStyle),
               }}
             >
