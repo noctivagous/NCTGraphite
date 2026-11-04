@@ -341,7 +341,7 @@ export function gridCellsInBounds(
       for (const coordinate of coordinates) {
         const cell = gridCell(spec, coordinate);
         const cellBounds = gridCellBounds(spec, cell);
-        if (cellBounds.maxX >= bounds.minX && cellBounds.minX <= bounds.maxX && cellBounds.maxY >= bounds.minY && cellBounds.maxY <= bounds.maxY) cells.push(cell);
+        if (cellBounds.maxX >= bounds.minX && cellBounds.minX <= bounds.maxX && cellBounds.maxY >= bounds.minY && cellBounds.minY <= bounds.maxY) cells.push(cell);
       }
     }
   }
