@@ -66,8 +66,9 @@ function ringToPixels(
   canvasW: number,
   canvasH: number,
 ): PixelPt[] {
-  const sx = (gx: number) => (gx / gridCols) * canvasW;
-  const sy = (gy: number) => (gy / gridRows) * canvasH;
+  // d3-contour places samples at index + 0.5; our values are at grid vertices.
+  const sx = (gx: number) => ((gx - 0.5) / gridCols) * canvasW;
+  const sy = (gy: number) => ((gy - 0.5) / gridRows) * canvasH;
   const pts: PixelPt[] = [];
   for (const p of ring) {
     const x = sx(p[0]), y = sy(p[1]);
