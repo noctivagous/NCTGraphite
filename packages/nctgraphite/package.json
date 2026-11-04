@@ -8,7 +8,8 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./density.css": "./src/theme/NCTGraphiteDensity.css"
   },
   "files": [
     "src"
@@ -19,5 +20,8 @@
   },
   "dependencies": {
     "d3-contour": "^4.0.2"
+  },
+  "devDependencies": {
+    "@types/d3-contour": "^3.0.6"
   }
 }

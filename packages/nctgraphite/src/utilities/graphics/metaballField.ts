@@ -150,7 +150,7 @@ export function contourLayersForBlobs(
       negatives,
     );
     const gen = contours().size([width, height]).thresholds([threshold]);
-    const multi = gen(values);
+    const multi = gen(Array.from(values));
     const parts: string[] = [];
     for (const mp of multi) {
       for (const polygon of mp.coordinates) {
