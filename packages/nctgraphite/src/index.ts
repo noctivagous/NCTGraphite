@@ -256,3 +256,138 @@ export type {
 export { buildLayoutCatalog, editablePropsFor } from './xml/NCTGraphiteLayoutCatalog.js';
 export type { LayoutCatalogEntry } from './xml/NCTGraphiteLayoutCatalog.js';
 export { NCTGraphiteLayoutView, parseNCTOptionList } from './xml/NCTGraphiteLayoutReact.js';
+
+export {
+  PanelNode,
+  PanelAgent,
+  SwarmBoid,
+  PanelizationSimulation,
+  mulberry32,
+} from './panelization/NCTGraphitePanelization.js';
+export type {
+  PanelColor,
+  PanelGeometry,
+  PanelAttractor,
+  PanelizationConfig,
+  PanelizationMesh,
+} from './panelization/NCTGraphitePanelization.js';
+export {
+  NCTGraphiteNurbsSurface,
+  createFlatSheetSurface,
+  createDemoSheetSurface,
+} from './panelization/NCTGraphiteNurbsSurface.js';
+export type {
+  NCTGraphiteNurbsSurfaceSpec,
+  NCTGraphiteSurfaceFrame,
+} from './panelization/NCTGraphiteNurbsSurface.js';
+export {
+  vec3,
+  vAdd,
+  vSub,
+  vScale,
+  vMid,
+  vDot,
+  vCross,
+  vLen,
+  vDist,
+  vUnit,
+  vWithLen,
+} from './panelization/NCTGraphiteVec3.js';
+export type { NCTGraphiteVec3 } from './panelization/NCTGraphiteVec3.js';
+
+export {
+  makeDataTree,
+  groupToTree,
+  treeItems,
+  treeBranch,
+  flattenTree,
+  graftTree,
+  simplifyTree,
+  mapTree,
+  treeStats,
+  formatDataPath,
+  compareDataPaths,
+} from './datatree/NCTGraphiteDataTree.js';
+export type {
+  DataPath,
+  DataBranch,
+  DataTree,
+  DataTreeStats,
+} from './datatree/NCTGraphiteDataTree.js';
+
+export {
+  constructTangleLayout,
+  TANGLE_PALETTE,
+} from './tangle/NCTGraphiteTangleLayout.js';
+export type {
+  TangleInputNode,
+  TangleBundle,
+  TangleBundleGroup,
+  TangleNode,
+  TangleLink,
+  TangleLayoutResult,
+  TangleLayoutOptions,
+} from './tangle/NCTGraphiteTangleLayout.js';
+
+export {
+  buildSunburst,
+  descendants as sunburstDescendants,
+  ancestors as sunburstAncestors,
+  zoomTargets,
+  arcVisible,
+  labelVisible,
+  interpolateSlice,
+  colourAncestor,
+  interpolateRainbow,
+  rainbowPalette,
+  sunburstColourScale,
+} from './sunburst/NCTGraphiteSunburstLayout.js';
+export type {
+  SunburstData,
+  SunburstSlice,
+  SunburstNode,
+} from './sunburst/NCTGraphiteSunburstLayout.js';
+
+export {
+  horizonWalk,
+  mulberry32,
+  horizonBandColor,
+  SCHEME_GREENS,
+  SCHEME_BLUES,
+  horizonBandFill,
+  horizonY,
+  ACTIVITY_LANES,
+  HorizonSeries,
+  createMonitor,
+  horizonReliefGeometry,
+} from './horizon/NCTGraphiteHorizon.js';
+export type {
+  HorizonStrip,
+  ActivityLane,
+  HorizonReliefOptions,
+  HorizonRelief,
+} from './horizon/NCTGraphiteHorizon.js';
+
+export {
+  buildTreemap,
+  descendants as treemapDescendants,
+  ancestors as treemapAncestors,
+  treemapPath,
+  zoomTargets as treemapZoomTargets,
+  resetCurrents,
+  binaryTileRects,
+  TREEMAP_WIDTH,
+  TREEMAP_HEIGHT,
+  SCHEME_CATEGORY10,
+  treemapHouse,
+  treemapHouseColor,
+  treemapCubeFaces,
+  TREEMAP_CUBE_FACES,
+} from './treemap/NCTGraphiteTreemapLayout.js';
+export type {
+  TreemapData,
+  TreemapRect,
+  TreemapNode,
+  TreemapCubeFace,
+  TreemapCubePiece,
+} from './treemap/NCTGraphiteTreemapLayout.js';
